@@ -39,6 +39,7 @@ import com.termux.shared.android.PermissionUtils;
 import com.termux.shizuku.ShizukuStatusActivity;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
+import moe.shizuku.manager.MainActivity;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -1473,11 +1474,7 @@ public class DashboardActivity extends Activity {
     }
 
     private boolean startOfficialShizukuHome() {
-        if (startInternalShizukuHomeActivity(new ComponentName(getPackageName(), "moe.shizuku.manager.MainActivity"))) {
-            return true;
-        }
-
-        if (startInternalShizukuHomeActivity(new ComponentName(getPackageName(), "moe.shizuku.manager.shell.MainActivity"))) {
+        if (startShizukuActivity(new Intent(this, MainActivity.class))) {
             return true;
         }
 
@@ -1486,18 +1483,6 @@ public class DashboardActivity extends Activity {
             return true;
         }
 
-        try {
-            final Intent launchIntent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
-            if (launchIntent == null) {
-                return false;
-            }
-            startActivity(launchIntent);
-            return true;
-        } catch (ActivityNotFoundException e) {
-            Logger.logWarn(LOG_TAG, "Shizuku official package not found: " + e.getMessage());
-        } catch (Exception e) {
-            Logger.logWarn(LOG_TAG, "Failed to open Shizuku official app: " + e.getMessage());
-        }
         return false;
     }
 

@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -166,36 +167,56 @@ public class BotDropService extends Service {
         if (mShizukuExecutor != null && shouldExecuteViaShizuku(safeCommand)) {
             ensureShizukuBridgeConfig();
             ShizukuShellExecutor.Result result = executeCommandViaShizuku(safeCommand, timeoutMs);
-            if (result != null && result.success) {
+            if (result != null) {
+                if (result.success) {
+                    return new CommandResult(
+                        result.success,
+                        result.stdout == null ? "" : result.stdout,
+                        result.stderr == null ? "" : result.stderr,
+                        result.exitCode
+                    );
+                }
+
+                if (isShizukuUnavailableResult(result)) {
+                    Logger.logWarn(LOG_TAG, "Shizuku execution unavailable: " + result.stderr);
+                    return new CommandResult(
+                        false,
+                        result.stdout == null ? "" : result.stdout,
+                        formatShizukuUnavailableMessage(result.stderr),
+                        result.exitCode
+                    );
+                }
+
                 return new CommandResult(
                     result.success,
                     result.stdout == null ? "" : result.stdout,
                     result.stderr == null ? "" : result.stderr,
                     result.exitCode
                 );
-            }
-            if (result == null) {
-                Logger.logWarn(LOG_TAG, "Shizuku execution failed, fallback to local shell");
             } else {
-                Logger.logWarn(LOG_TAG, "Shizuku execution returned code " + result.exitCode
-                    + ", fallback to local shell: " + (result.stderr == null ? "" : result.stderr));
+                Logger.logWarn(LOG_TAG, "Shizuku execution unavailable: null result");
+                return new CommandResult(
+                    false,
+                    "",
+                    "Shizuku execution unavailable",
+                    -1
+                );
             }
         } else if (shouldExecuteViaShizuku(safeCommand)) {
             Logger.logWarn(LOG_TAG, shizukuUnavailableMessage());
-        } else {
-            Logger.logWarn(LOG_TAG, "OpenClaw command forced to local shell for compatibility");
+            return new CommandResult(
+                false,
+                "",
+                formatShizukuUnavailableMessage(null),
+                -1
+            );
         }
 
         return executeCommandViaLocal(safeCommand, timeoutSeconds);
     }
 
     private boolean shouldExecuteViaShizuku(String command) {
-        if (command == null || command.isEmpty()) {
-            return false;
-        }
-        return !command.contains("openclaw")
-            && !command.contains(".openclaw")
-            && !command.contains("shizuku-bridge.json");
+        return command != null && !command.isEmpty();
     }
 
     private ShizukuShellExecutor.Result executeCommandViaShizuku(String safeCommand, int timeoutMs) {
@@ -212,6 +233,28 @@ public class BotDropService extends Service {
 
         Logger.logInfo(LOG_TAG, "execute via shizuku bridge");
         return mShizukuExecutor.executeSync(safeCommand, timeoutMs);
+    }
+
+    private boolean isShizukuUnavailableResult(ShizukuShellExecutor.Result result) {
+        if (result == null || result.stderr == null) {
+            return true;
+        }
+        String stderr = result.stderr.toLowerCase(Locale.ROOT);
+        return !result.success
+            && (stderr.contains("shizuku execution unavailable")
+            || stderr.contains("permission not granted")
+            || stderr.contains("permission")
+            || stderr.contains("binder")
+            || stderr.contains("not available")
+            || stderr.contains("process failed")
+            || stderr.contains("security denied"));
+    }
+
+    private String formatShizukuUnavailableMessage(String stderrHint) {
+        if (stderrHint != null && !stderrHint.trim().isEmpty()) {
+            return "Shizuku unavailable: " + stderrHint.trim();
+        }
+        return shizukuUnavailableMessage();
     }
 
     private CommandResult executeCommandViaLocal(String safeCommand, int timeoutSeconds) {

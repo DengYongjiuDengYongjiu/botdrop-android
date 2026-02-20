@@ -176,7 +176,7 @@ public final class ShizukuBridgeServer {
                 return;
             }
 
-            if (!"POST".equals(method) || "/shizuku/exec".equals(path) == false) {
+            if (!"POST".equals(method) || !"/shizuku/exec".equals(path)) {
                 writeResponse(socket, 404, "", buildError("Not found"));
                 return;
             }
@@ -207,10 +207,6 @@ public final class ShizukuBridgeServer {
             return buildError("Missing request body");
         }
 
-        if (mExecutor == null || !mExecutor.isBound()) {
-            return buildError("SHIZUKU_NOT_READY");
-        }
-
         try {
             JSONObject req = new JSONObject(body);
             String command = req.optString("command", "").trim();
@@ -219,19 +215,80 @@ public final class ShizukuBridgeServer {
             }
 
             int timeout = req.optInt("timeoutMs", 30000);
-            ShizukuShellExecutor.Result result = mExecutor.executeSync(command, timeout);
 
-            JSONObject response = new JSONObject();
-            response.put("ok", result.success);
-            response.put("exitCode", result.exitCode);
-            response.put("stdout", result.stdout == null ? "" : result.stdout);
-            response.put("stderr", result.stderr == null ? "" : result.stderr);
-            return response.toString();
+            if (mExecutor == null) {
+                return buildUnavailableResponse("executor missing");
+            }
+            if (mExecutor.isBound()) {
+                ShizukuShellExecutor.Result result = mExecutor.executeSync(command, timeout);
+                if (result != null && result.success) {
+                    return toJsonResponse(result, "shizuku", false).toString();
+                }
+                if (result != null && isShizukuUnavailable(result)) {
+                    Logger.logWarn(LOG_TAG, "Shizuku unavailable: " + result.stderr);
+                    return buildUnavailableResponse(result.stderr == null ? "shizuku unavailable" : result.stderr);
+                }
+                if (result == null) {
+                    Logger.logWarn(LOG_TAG, "Shizuku executor returned null");
+                    return buildUnavailableResponse("executor unavailable");
+                }
+
+                // keep Shizuku result on normal command failures (e.g. command syntax)
+                return toJsonResponse(result, "shizuku", false).toString();
+            }
+
+            Logger.logWarn(LOG_TAG, "Shizuku shell service not bound");
+            return buildUnavailableResponse("shizuku not bound");
         } catch (JSONException e) {
             return buildError("Invalid JSON body");
         } catch (Exception e) {
             return buildError("Execution failed: " + e.getMessage());
         }
+    }
+
+    private boolean isShizukuUnavailable(ShizukuShellExecutor.Result result) {
+        if (result == null || result.stderr == null) {
+            return true;
+        }
+        String stderr = result.stderr.toLowerCase(Locale.ROOT);
+        return stderr.contains("shizuku execution unavailable")
+            || stderr.contains("binder not ready")
+            || stderr.contains("permission not granted")
+            || stderr.contains("no permission")
+            || stderr.contains("security denied")
+            || stderr.contains("process failed")
+            || stderr.contains("shizuku service unavailable")
+            || "false".equalsIgnoreCase(String.valueOf(result.success)) && result.exitCode != 0 && result.stderr.trim().isEmpty();
+    }
+
+    private String buildUnavailableResponse(String reason) {
+        try {
+            JSONObject response = new JSONObject();
+            response.put("ok", false);
+            response.put("exitCode", -1);
+            response.put("stdout", "");
+            response.put("stderr", "Shizuku unavailable: " + (reason == null ? "" : reason));
+            response.put("mode", "shizuku");
+            response.put("fallback", false);
+            response.put("fallbackReason", "");
+            return response.toString();
+        } catch (JSONException e) {
+            return buildError("Shizuku unavailable: " + (reason == null ? "" : reason));
+        }
+    }
+
+    private JSONObject toJsonResponse(ShizukuShellExecutor.Result result, String mode, boolean fallback) {
+        JSONObject response = new JSONObject();
+        try {
+            response.put("ok", result.success);
+            response.put("exitCode", result.exitCode);
+            response.put("stdout", result.stdout == null ? "" : result.stdout);
+            response.put("stderr", result.stderr == null ? "" : result.stderr);
+            response.put("mode", mode);
+            response.put("fallback", fallback);
+        } catch (JSONException ignored) {
+        }
+        return response;
     }
 
     private String buildStatusPayload() {

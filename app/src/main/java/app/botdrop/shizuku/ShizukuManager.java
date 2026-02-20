@@ -1,8 +1,10 @@
 package app.botdrop.shizuku;
 
 import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.os.Handler;
 import android.os.Looper;
+import android.content.pm.PackageManager;
 
 import com.termux.shared.logger.Logger;
 
@@ -110,15 +112,27 @@ public final class ShizukuManager {
     }
 
     public void requestPermission() {
-        Logger.logDebug(LOG_TAG, "Embedded bridge does not require external permission request");
+        if (!mInitialized || mContext == null) {
+            return;
+        }
+        if (!rikka.shizuku.Shizuku.pingBinder()) {
+            Logger.logWarn(LOG_TAG, "Shizuku binder is not ready");
+            return;
+        }
+        try {
+            rikka.shizuku.Shizuku.requestPermission(0);
+        } catch (Throwable tr) {
+            Logger.logWarn(LOG_TAG, "requestPermission failed: " + tr.getMessage());
+        }
     }
 
     public String getInstalledShizukuPackageName() {
-        return null;
+        return mContext == null ? null : mContext.getPackageName();
     }
 
     public String[] getKnownShizukuPackages() {
-        return new String[0];
+        String packageName = getInstalledShizukuPackageName();
+        return packageName == null ? new String[0] : new String[]{packageName};
     }
 
     private Status resolveStatusInternal() {
@@ -126,15 +140,33 @@ public final class ShizukuManager {
             return Status.NOT_INSTALLED;
         }
 
-        if (!mBridgeReady) {
+        if (!rikka.shizuku.Shizuku.pingBinder()) {
             return Status.NOT_RUNNING;
+        }
+
+        int perm = PackageManager.PERMISSION_DENIED;
+        try {
+            perm = rikka.shizuku.Shizuku.checkSelfPermission();
+        } catch (Throwable tr) {
+            Logger.logWarn(LOG_TAG, "checkSelfPermission failed: " + tr.getMessage());
+        }
+        if (perm != PackageManager.PERMISSION_GRANTED) {
+            return Status.NO_PERMISSION;
         }
 
         return Status.READY;
     }
 
     private boolean isShizukuInstalled() {
-        return mContext != null;
+        if (mContext == null) {
+            return false;
+        }
+        try {
+            PackageInfo info = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+            return info != null;
+        } catch (Throwable ignored) {
+            return false;
+        }
     }
 
     private void notifyStatusChanged(Status status) {

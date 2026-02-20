@@ -1,8 +1,10 @@
 package app.botdrop.shizuku;
 
+import android.content.pm.PackageManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Parcel;
 
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
@@ -23,6 +25,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import moe.shizuku.server.IShizukuService;
+import moe.shizuku.server.IRemoteProcess;
+import rikka.shizuku.Shizuku;
+import rikka.shizuku.ShizukuRemoteProcess;
+
 /**
  * Embedded Binder shell service entry point.
  * Executes commands and returns JSON results for the local bridge path.
@@ -31,11 +38,8 @@ public class ShellService extends Service {
 
     private static final String LOG_TAG = "ShizukuShellService";
     private static final int DEFAULT_TIMEOUT_MS = 30000;
-    private static final int ROOT_CHECK_TIMEOUT_MS = 1500;
 
     private final ExecutorService mStreamExecutor = Executors.newCachedThreadPool();
-    private final Object mRootCheckLock = new Object();
-    private volatile Boolean mHasRoot;
 
     private final IShellService.Stub mBinder = new IShellService.Stub() {
         @Override
@@ -58,7 +62,6 @@ public class ShellService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mHasRoot = null;
     }
 
     @Override
@@ -78,14 +81,11 @@ public class ShellService extends Service {
 
         Process process = null;
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder(selectCommand(safeCommand));
-            processBuilder.environment().put("PREFIX", TermuxConstants.TERMUX_PREFIX_DIR_PATH);
-            processBuilder.environment().put("HOME", TermuxConstants.TERMUX_HOME_DIR_PATH);
-            processBuilder.environment().put("PATH", TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + ":" + System.getenv("PATH"));
-            processBuilder.environment().put("TMPDIR", TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH);
-            processBuilder.environment().put("SSL_CERT_FILE", TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/etc/tls/cert.pem");
-            processBuilder.environment().put("NODE_OPTIONS", "--dns-result-order=ipv4first");
-            process = processBuilder.start();
+            process = createProcess(safeCommand);
+            if (process == null) {
+                stderr = "Shizuku execution unavailable";
+                return buildJsonResult(exitCode, stdout, stderr);
+            }
 
             Future<String> stdoutFuture = mStreamExecutor.submit(readProcessOutput(process.getInputStream()));
             Future<String> stderrFuture = mStreamExecutor.submit(readProcessOutput(process.getErrorStream()));
@@ -108,7 +108,7 @@ public class ShellService extends Service {
                     stderr = stderr + tail;
                 }
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
             Logger.logError(LOG_TAG, "executeCommand failed: " + e.getMessage());
             stderr = (stderr == null ? "" : stderr) + "\n" + e.getMessage();
             if (process != null) {
@@ -140,12 +140,102 @@ public class ShellService extends Service {
         return result.toString();
     }
 
+    private String buildJsonResult(int exitCode, String stdout, String stderr) {
+        JSONObject result = new JSONObject();
+        try {
+            result.put("exitCode", exitCode);
+            result.put("stdout", stdout == null ? "" : stdout);
+            result.put("stderr", stderr == null ? "" : stderr);
+            result.put("success", exitCode == 0);
+        } catch (JSONException e) {
+            Logger.logWarn(LOG_TAG, "Failed to build result JSON: " + e.getMessage());
+        }
+        return result.toString();
+    }
+
+    private Process createProcess(String command) {
+        Process shizukuProcess = createShizukuProcess(command);
+        if (shizukuProcess != null) {
+            return shizukuProcess;
+        }
+        return null;
+    }
+
+    private Process createShizukuProcess(String command) {
+        if (!Shizuku.pingBinder()) {
+            Logger.logWarn(LOG_TAG, "Shizuku binder not ready");
+            return null;
+        }
+
+        int permission;
+        try {
+            permission = Shizuku.checkSelfPermission();
+        } catch (Throwable e) {
+            Logger.logWarn(LOG_TAG, "Shizuku checkSelfPermission failed: " + e.getMessage());
+            return null;
+        }
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            Logger.logWarn(LOG_TAG, "Shizuku permission not granted");
+            return null;
+        }
+
+        try {
+            IShizukuService service = IShizukuService.Stub.asInterface(Shizuku.getBinder());
+            if (service == null) {
+                return null;
+            }
+            IRemoteProcess remoteProcess = service.newProcess(selectCommand(command), getShizukuEnv(), null);
+            return createWrappedShizukuRemoteProcess(remoteProcess);
+        } catch (SecurityException e) {
+            Logger.logWarn(LOG_TAG, "Shizuku security denied: " + e.getMessage());
+            return null;
+        } catch (Throwable e) {
+            Logger.logWarn(LOG_TAG, "Shizuku process execution failed: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private Process createWrappedShizukuRemoteProcess(IRemoteProcess remoteProcess) {
+        if (remoteProcess == null) {
+            return null;
+        }
+
+        try {
+            Parcel parcel = Parcel.obtain();
+            try {
+                parcel.writeStrongBinder(remoteProcess.asBinder());
+                parcel.setDataPosition(0);
+                ShizukuRemoteProcess wrapped = ShizukuRemoteProcess.CREATOR.createFromParcel(parcel);
+                return wrapped;
+            } finally {
+                parcel.recycle();
+            }
+        } catch (Throwable e) {
+            Logger.logWarn(LOG_TAG, "Failed to wrap remote process: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private String[] getShizukuEnv() {
+        String systemPath = System.getenv("PATH");
+        if (systemPath == null || systemPath.isEmpty()) {
+            systemPath = "/system/bin:/system/xbin:/vendor/bin:/sbin:/vendor/sbin";
+        }
+
+        return new String[]{
+            "PREFIX=" + TermuxConstants.TERMUX_PREFIX_DIR_PATH,
+            "HOME=" + TermuxConstants.TERMUX_HOME_DIR_PATH,
+            "PATH=" + TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + ":" + systemPath,
+            "TMPDIR=" + TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH,
+            "SSL_CERT_FILE=" + TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/etc/tls/cert.pem",
+            "NODE_OPTIONS=--dns-result-order=ipv4first"
+        };
+    }
+
     private String[] selectCommand(String command) {
         String payload = ensureTermuxEnvironment(command);
-        if (hasRootAccess()) {
-            return new String[]{"su", "-c", payload};
-        }
-        return new String[]{"sh", "-lc", payload};
+        return new String[]{"/system/bin/sh", "-c", payload};
     }
 
     private String ensureTermuxEnvironment(String command) {
@@ -157,40 +247,6 @@ public class ShellService extends Service {
             "export SSL_CERT_FILE=" + TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/etc/tls/cert.pem; " +
             "export NODE_OPTIONS=--dns-result-order=ipv4first; " +
             safeCommand;
-    }
-
-    private boolean hasRootAccess() {
-        Boolean cached = mHasRoot;
-        if (cached != null) {
-            return cached;
-        }
-
-        synchronized (mRootCheckLock) {
-            if (mHasRoot != null) {
-                return mHasRoot;
-            }
-
-            Process process = null;
-            try {
-                process = new ProcessBuilder("su", "-c", "id -u").start();
-                boolean finished = process.waitFor(ROOT_CHECK_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-                if (!finished) {
-                    process.destroyForcibly();
-                    mHasRoot = false;
-                    return false;
-                }
-                mHasRoot = process.exitValue() == 0;
-                return mHasRoot;
-            } catch (Exception e) {
-                Logger.logWarn(LOG_TAG, "Root check failed: " + e.getMessage());
-                mHasRoot = false;
-                return false;
-            } finally {
-                if (process != null) {
-                    process.destroy();
-                }
-            }
-        }
     }
 
     private Callable<String> readProcessOutput(InputStream inputStream) {

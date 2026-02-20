@@ -26,7 +26,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 import java.util.UUID;
 
 public class ShizukuBridgeService extends Service {
@@ -57,8 +56,8 @@ public class ShizukuBridgeService extends Service {
             @Override
             public void onServiceDisconnected() {
                 mHandler.post(() -> {
-                    Logger.logWarn(LOG_TAG, "Shell service disconnected, stopping bridge");
-                    stopBridgeServer();
+                    Logger.logWarn(LOG_TAG, "Shell service disconnected, keeping bridge for status tracking");
+                    startBridgeServerIfReady();
                 });
             }
         };
@@ -124,28 +123,25 @@ public class ShizukuBridgeService extends Service {
             if (mShellExecutor != null) {
                 mShellExecutor.bind();
             }
-            refreshBridgeState();
         } else {
-            stopBridgeServer();
             if (mShellExecutor != null && mShellExecutor.isBound()) {
                 mShellExecutor.unbind();
             }
         }
+        refreshBridgeState();
     }
 
     private void refreshBridgeState() {
-        if (!isShizukuReady()) {
-            stopBridgeServer();
-            return;
-        }
-
         if (mShellExecutor == null) {
             stopBridgeServer();
             return;
         }
 
         if (!mShellExecutor.isBound() && mShellExecutor.isReady()) {
-            mShellExecutor.bind();
+            if (!mShellExecutor.bind()) {
+                Logger.logWarn(LOG_TAG, "ShellService bind failed, start bridge anyway for status reporting");
+                startBridgeServerIfReady();
+            }
             return;
         }
 
@@ -153,10 +149,7 @@ public class ShizukuBridgeService extends Service {
     }
 
     private void startBridgeServerIfReady() {
-        if (!isShizukuReady()) {
-            return;
-        }
-        if (mShellExecutor == null || !mShellExecutor.isBound()) {
+        if (mShellExecutor == null) {
             return;
         }
         if (mBridgeServer == null) {
@@ -183,7 +176,11 @@ public class ShizukuBridgeService extends Service {
             boolean ok = mBridgeServer.start();
             if (ok) {
                 writeBridgeConfig();
-                updateNotification("Shizuku bridge running");
+                if (mShizukuManager != null && mShizukuManager.isReady()) {
+                    updateNotification("Shizuku bridge running (Shizuku ready)");
+                } else {
+                    updateNotification("Shizuku bridge running (Shizuku waiting)");
+                }
             } else {
                 Logger.logError(LOG_TAG, "Failed to start bridge server");
                 updateNotification("Shizuku bridge failed");
@@ -198,10 +195,6 @@ public class ShizukuBridgeService extends Service {
         mBridgeServer = null;
         deleteBridgeConfig();
         updateNotification("Shizuku bridge stopped");
-    }
-
-    private boolean isShizukuReady() {
-        return mShizukuManager != null && mShizukuManager.isReady();
     }
 
     private void ensureToken() {
