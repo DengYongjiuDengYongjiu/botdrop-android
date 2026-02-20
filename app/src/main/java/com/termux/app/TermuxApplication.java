@@ -1,6 +1,5 @@
 package com.termux.app;
 
-import android.app.Application;
 import android.content.Context;
 
 import com.termux.BuildConfig;
@@ -16,8 +15,12 @@ import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment
 import com.termux.shared.termux.shell.am.TermuxAmSocketServer;
 import com.termux.shared.termux.shell.TermuxShellManager;
 import com.termux.shared.termux.theme.TermuxThemeUtils;
+import com.termux.shizuku.ShizukuBootstrap;
+import androidx.appcompat.app.AppCompatDelegate;
 
-public class TermuxApplication extends Application {
+import moe.shizuku.manager.ShizukuSettings;
+
+public class TermuxApplication extends moe.shizuku.manager.ShizukuApplication {
 
     private static final String LOG_TAG = "TermuxApplication";
 
@@ -42,6 +45,15 @@ public class TermuxApplication extends Application {
 
         // Init app wide shell manager
         TermuxShellManager shellManager = TermuxShellManager.init(context);
+        try {
+            ShizukuBootstrap.bootstrap(context);
+        } catch (Throwable ignored) {
+            Logger.logWarn(LOG_TAG, "Shizuku bootstrap skipped: " + ignored.getClass().getSimpleName());
+        }
+
+        // Initialize Shizuku manager shared settings in single-app mode
+        ShizukuSettings.initialize(context);
+        AppCompatDelegate.setDefaultNightMode(ShizukuSettings.getNightMode());
 
         // Set NightMode.APP_NIGHT_MODE
         TermuxThemeUtils.setAppNightMode(properties.getNightMode());

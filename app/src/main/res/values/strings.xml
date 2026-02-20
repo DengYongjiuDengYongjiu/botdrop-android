@@ -22,6 +22,8 @@
     <string name="permission_run_command_label">Run commands in &TERMUX_APP_NAME; environment</string>
     <string name="permission_run_command_description">execute arbitrary commands within &TERMUX_APP_NAME;
         environment and access files</string>
+    <string name="shizuku_manager_permission_description">Allow components in same application to manage Shizuku.</string>
+    <string name="shizuku_api_v23_permission_description">Allow Shizuku API clients to access protected framework APIs.</string>
 
 
 
@@ -234,5 +236,9 @@
 
     <!-- Donate Preference -->
     <string name="donate_preference_title">Donate</string>
+
+    <string name="shizuku_single_app_preferences_title">Shizuku (Single App)</string>
+    <string name="shizuku_single_app_preferences_summary">Open Shizuku status and manual start controls</string>
+    <string name="action_open_shizuku_status">Open Shizuku Home</string>
 
 </resources>

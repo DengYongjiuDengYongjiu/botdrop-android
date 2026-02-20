@@ -11,6 +11,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Environment;
 import android.os.Build;
 import android.net.Uri;
@@ -33,6 +35,7 @@ import androidx.core.content.ContextCompat;
 import com.termux.R;
 import com.termux.app.TermuxActivity;
 import com.termux.shared.android.PermissionUtils;
+import com.termux.shizuku.ShizukuStatusActivity;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
 
@@ -156,6 +159,7 @@ public class DashboardActivity extends Activity {
     private TextView mOpenclawWebUiButton;
     private TextView mOpenclawBackupButton;
     private TextView mOpenclawRestoreButton;
+    private Button mOpenShizukuButton;
     private ImageButton mBackToAgentSelectionButton;
     private String mOpenclawLatestUpdateVersion;
     private AlertDialog mOpenclawUpdateDialog;
@@ -228,6 +232,7 @@ public class DashboardActivity extends Activity {
         mStopButton = findViewById(R.id.btn_stop);
         mRestartButton = findViewById(R.id.btn_restart);
         Button openTerminalButton = findViewById(R.id.btn_open_terminal);
+        mOpenShizukuButton = findViewById(R.id.btn_open_shizuku);
         mCurrentModelText = findViewById(R.id.current_model_text);
         Button changeModelButton = findViewById(R.id.btn_change_model);
         mGatewayErrorBanner = findViewById(R.id.gateway_error_banner);
@@ -239,6 +244,9 @@ public class DashboardActivity extends Activity {
         mRestartButton.setOnClickListener(v -> restartGatewayForControl());
         openTerminalButton.setOnClickListener(v -> openTerminal());
         changeModelButton.setOnClickListener(v -> showModelSelector());
+        if (mOpenShizukuButton != null) {
+            mOpenShizukuButton.setOnClickListener(v -> openShizukuStatus());
+        }
 
         mSshCard = findViewById(R.id.ssh_card);
         mSshInfoText = findViewById(R.id.ssh_info_text);
@@ -1447,6 +1455,88 @@ public class DashboardActivity extends Activity {
     private void openTerminal() {
         Intent intent = new Intent(this, TermuxActivity.class);
         startActivity(intent);
+    }
+
+    private void openShizukuStatus() {
+        if (startOfficialShizukuHome()) {
+            return;
+        }
+
+        Intent intent = new Intent(this, ShizukuStatusActivity.class);
+        intent.putExtra(ShizukuStatusActivity.EXTRA_AUTO_START, true);
+        intent.putExtra(ShizukuStatusActivity.EXTRA_AUTO_REQUEST_PERMISSION, true);
+        startActivity(intent);
+    }
+
+    private boolean startOfficialShizukuHome() {
+        if (startInternalShizukuHomeActivity(new ComponentName(getPackageName(), "moe.shizuku.manager.MainActivity"))) {
+            return true;
+        }
+
+        if (startInternalShizukuHomeActivity(new ComponentName(getPackageName(), "moe.shizuku.manager.shell.MainActivity"))) {
+            return true;
+        }
+
+        Intent launcherIntent = resolveShizukuManagerLauncherActivity();
+        if (launcherIntent != null && startShizukuActivity(launcherIntent)) {
+            return true;
+        }
+
+        try {
+            final Intent launchIntent = getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
+            if (launchIntent == null) {
+                return false;
+            }
+            startActivity(launchIntent);
+            return true;
+        } catch (ActivityNotFoundException e) {
+            Logger.logWarn(LOG_TAG, "Shizuku official package not found: " + e.getMessage());
+        } catch (Exception e) {
+            Logger.logWarn(LOG_TAG, "Failed to open Shizuku official app: " + e.getMessage());
+        }
+        return false;
+    }
+
+    private Intent resolveShizukuManagerLauncherActivity() {
+        Intent launcherIntent = new Intent(Intent.ACTION_MAIN);
+        launcherIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        launcherIntent.setPackage(getPackageName());
+
+        List<ResolveInfo> activities = getPackageManager().queryIntentActivities(launcherIntent, PackageManager.MATCH_ALL);
+        if (activities == null) {
+            return null;
+        }
+
+        for (ResolveInfo activity : activities) {
+            if (activity.activityInfo == null) {
+                continue;
+            }
+
+            String className = activity.activityInfo.name;
+            if (className != null && className.startsWith("moe.shizuku.manager")) {
+                return new Intent(launcherIntent).setClassName(activity.activityInfo.packageName, className);
+            }
+        }
+        return null;
+    }
+
+    private boolean startShizukuActivity(Intent intent) {
+        try {
+            startActivity(intent);
+            return true;
+        } catch (ActivityNotFoundException e) {
+            Logger.logWarn(LOG_TAG, "Internal Shizuku home not found: " + intent);
+        } catch (Exception e) {
+            Logger.logWarn(LOG_TAG, "Failed to open internal Shizuku home: " + intent + ", " + e.getMessage());
+        }
+        return false;
+    }
+
+    private boolean startInternalShizukuHomeActivity(ComponentName componentName) {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+        intent.setComponent(componentName);
+        return startShizukuActivity(intent);
     }
 
     private void openOpenclawWebUi() {

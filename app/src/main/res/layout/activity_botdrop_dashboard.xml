@@ -541,14 +541,34 @@
                     android:textColor="@color/botdrop_on_background" />
         </LinearLayout>
 
-        <!-- Terminal Button -->
-        <Button
-            android:id="@+id/btn_open_terminal"
+        <!-- Tool Buttons -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🖥 Open Terminal"
-            android:textAllCaps="false"
-            android:background="@drawable/botdrop_button_outline_bg"
-            android:textColor="@color/botdrop_accent" />
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <Button
+                android:id="@+id/btn_open_terminal"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="🖥 Open Terminal"
+                android:textAllCaps="false"
+                android:background="@drawable/botdrop_button_outline_bg"
+                android:textColor="@color/botdrop_accent" />
+
+            <Button
+                android:id="@+id/btn_open_shizuku"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="@string/action_open_shizuku_status"
+                android:textAllCaps="false"
+                android:background="@drawable/botdrop_button_bg"
+                android:textColor="#1A1A1A" />
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

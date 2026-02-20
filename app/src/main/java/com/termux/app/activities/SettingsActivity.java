@@ -1,6 +1,10 @@
 package com.termux.app.activities;
 
+import android.content.Intent;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -16,6 +20,7 @@ import com.termux.shared.models.ReportInfo;
 import com.termux.app.models.UserAction;
 import com.termux.shared.interact.ShareUtils;
 import com.termux.shared.android.PackageUtils;
+import com.termux.shizuku.ShizukuStatusActivity;
 import com.termux.shared.termux.settings.preferences.TermuxAPIAppSharedPreferences;
 import com.termux.shared.termux.settings.preferences.TermuxFloatAppSharedPreferences;
 import com.termux.shared.termux.settings.preferences.TermuxTaskerAppSharedPreferences;
@@ -25,6 +30,8 @@ import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.activity.media.AppCompatActivityUtils;
 import com.termux.shared.theme.NightMode;
+
+import java.util.List;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -67,10 +74,75 @@ public class SettingsActivity extends AppCompatActivity {
                     configureTermuxFloatPreference(context);
                     configureTermuxTaskerPreference(context);
                     configureTermuxWidgetPreference(context);
+                    configureShizukuPreference(context);
                     configureAboutPreference(context);
                     configureDonatePreference(context);
                 }
             }.start();
+        }
+
+        private void configureShizukuPreference(@NonNull Context context) {
+            Preference shizukuPreference = findPreference("shizuku");
+            if (shizukuPreference != null) {
+                shizukuPreference.setOnPreferenceClickListener(preference -> {
+                    Intent launchIntent = getShizukuHomeIntent(context);
+                    if (launchIntent == null) {
+                        launchIntent = new Intent(context, ShizukuStatusActivity.class);
+                    }
+                    startActivity(launchIntent);
+                    return true;
+                });
+            }
+        }
+
+        private Intent getShizukuHomeIntent(Context context) {
+            Intent mainIntent = tryCreateInternalShizukuIntent(context, new ComponentName(context.getPackageName(), "moe.shizuku.manager.MainActivity"));
+            if (mainIntent != null) {
+                return mainIntent;
+            }
+
+            Intent shellIntent = tryCreateInternalShizukuIntent(context, new ComponentName(context.getPackageName(), "moe.shizuku.manager.shell.MainActivity"));
+            if (shellIntent != null) {
+                return shellIntent;
+            }
+
+            Intent launcherIntent = resolveShizukuManagerLauncherActivity(context);
+            if (launcherIntent != null) {
+                return launcherIntent;
+            }
+
+            return context.getPackageManager().getLaunchIntentForPackage("moe.shizuku.privileged.api");
+        }
+
+        private Intent resolveShizukuManagerLauncherActivity(Context context) {
+            Intent launcherIntent = new Intent(Intent.ACTION_MAIN);
+            launcherIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+            launcherIntent.setPackage(context.getPackageName());
+
+            List<ResolveInfo> activities = context.getPackageManager().queryIntentActivities(launcherIntent, PackageManager.MATCH_ALL);
+            if (activities == null) {
+                return null;
+            }
+
+            for (ResolveInfo activity : activities) {
+                if (activity.activityInfo == null) {
+                    continue;
+                }
+
+                String className = activity.activityInfo.name;
+                if (className != null && className.startsWith("moe.shizuku.manager")) {
+                    return new Intent(launcherIntent).setClassName(activity.activityInfo.packageName, className);
+                }
+            }
+
+            return null;
+        }
+
+        private Intent tryCreateInternalShizukuIntent(Context context, ComponentName componentName) {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+            intent.setComponent(componentName);
+            return intent;
         }
 
         private void configureTermuxAPIPreference(@NonNull Context context) {
@@ -125,12 +197,21 @@ public class SettingsActivity extends AppCompatActivity {
 
                             String userActionName = UserAction.ABOUT.getName();
 
-                            ReportInfo reportInfo = new ReportInfo(userActionName,
-                                TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME, title);
+                            ReportInfo reportInfo = new ReportInfo(
+                                userActionName,
+                                TermuxConstants.TERMUX_APP.TERMUX_SETTINGS_ACTIVITY_NAME,
+                                title
+                            );
                             reportInfo.setReportString(aboutString.toString());
-                            reportInfo.setReportSaveFileLabelAndPath(userActionName,
+                            reportInfo.setReportSaveFileLabelAndPath(
+                                userActionName,
                                 Environment.getExternalStorageDirectory() + "/" +
-                                    FileUtils.sanitizeFileName(TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log", true, true));
+                                    FileUtils.sanitizeFileName(
+                                        TermuxConstants.TERMUX_APP_NAME + "-" + userActionName + ".log",
+                                        true,
+                                        true
+                                    )
+                            );
 
                             ReportActivity.startReportActivity(context, reportInfo);
                         }

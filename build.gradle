@@ -9,9 +9,25 @@ buildscript {
 }
 
 allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url "https://jitpack.io" }
+}
+
+subprojects { project ->
+    project.afterEvaluate {
+        def androidExt = project.extensions.findByName("android")
+        if (androidExt == null) {
+            return
+        }
+        def compileSdk = rootProject.properties.compileSdkVersion ?: rootProject.findProperty("compileSdkVersion")
+        if (compileSdk != null) {
+            def compileSdkInt = compileSdk.toInteger()
+            try {
+                if (androidExt.hasProperty("compileSdk")) {
+                    androidExt.compileSdk = compileSdkInt
+                } else if (androidExt.hasProperty("compileSdkVersion")) {
+                    androidExt.compileSdkVersion = compileSdkInt
+                }
+            } catch (Throwable ignored) {
+            }
+        }
     }
 }

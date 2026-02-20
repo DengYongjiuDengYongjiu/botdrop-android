@@ -35,6 +35,12 @@
         app:fragment="com.termux.app.fragments.settings.TermuxWidgetPreferencesFragment"/>
 
     <Preference
+        app:key="shizuku"
+        app:title="@string/shizuku_single_app_preferences_title"
+        app:summary="@string/shizuku_single_app_preferences_summary"
+        app:persistent="false"/>
+
+    <Preference
         app:key="about"
         app:title="@string/about_preference_title"
         app:persistent="false"/>

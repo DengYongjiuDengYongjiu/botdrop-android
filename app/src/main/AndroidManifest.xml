@@ -18,6 +18,17 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/permission_run_command_label"
         android:protectionLevel="dangerous" />
+    <permission
+        android:name="${TERMUX_PACKAGE_NAME}.permission.MANAGER"
+        android:description="@string/shizuku_manager_permission_description"
+        android:protectionLevel="signature" />
+    <uses-permission android:name="${TERMUX_PACKAGE_NAME}.permission.MANAGER" />
+    <permission
+        android:name="${TERMUX_PACKAGE_NAME}.permission.API_V23"
+        android:description="@string/shizuku_api_v23_permission_description"
+        tools:replace="android:description"
+        android:protectionLevel="dangerous" />
+    <uses-permission android:name="${TERMUX_PACKAGE_NAME}.permission.API_V23" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -47,6 +58,7 @@
     <application
         android:name=".app.TermuxApplication"
         android:allowBackup="false"
+        tools:replace="android:allowBackup,android:banner,android:icon,android:label,android:supportsRtl,android:theme"
         android:banner="@drawable/banner"
         android:extractNativeLibs="true"
         android:icon="@mipmap/ic_launcher"
@@ -176,6 +188,21 @@
             </intent-filter>
         </activity-alias>
 
+        <activity
+            android:name=".shizuku.ShizukuPermissionActivity"
+            android:exported="true"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL"
+            android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar">
+            <intent-filter>
+                <action android:name="${TERMUX_PACKAGE_NAME}.intent.action.REQUEST_PERMISSION" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".shizuku.ShizukuStatusActivity"
+            android:exported="false"
+            android:theme="@style/Theme.TermuxApp.DayNight.NoActionBar" />
+
         <activity-alias
             android:name=".app.api.file.FileViewReceiverActivity"
             android:exported="true"
@@ -212,6 +239,19 @@
             android:exported="true"
             android:grantUriPermissions="true"
             android:permission="${TERMUX_PACKAGE_NAME}.permission.RUN_COMMAND" />
+        <provider
+            android:name="rikka.shizuku.ShizukuProvider"
+            android:authorities="${TERMUX_PACKAGE_NAME}.shizuku"
+            android:exported="true"
+            android:multiprocess="false"
+            android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+        <receiver
+            android:name=".shizuku.ShizukuReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="rikka.shizuku.intent.action.REQUEST_BINDER" />
+            </intent-filter>
+        </receiver>
 
 
         <receiver
