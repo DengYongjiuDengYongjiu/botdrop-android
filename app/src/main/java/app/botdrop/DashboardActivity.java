@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
+import app.botdrop.shizuku.ShizukuBridgeService;
 import com.termux.R;
 import com.termux.app.TermuxActivity;
 import com.termux.shared.android.PermissionUtils;
@@ -197,6 +198,9 @@ public class DashboardActivity extends Activity {
 
             // Start gateway monitor service
             startGatewayMonitorService();
+
+            // Keep embedded Shizuku bridge warm for openclaw/command fallback path
+            startShizukuBridgeService();
 
             // Load current model
             loadCurrentModel();
@@ -1537,6 +1541,19 @@ public class DashboardActivity extends Activity {
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.setComponent(componentName);
         return startShizukuActivity(intent);
+    }
+
+    private void startShizukuBridgeService() {
+        Intent intent = new Intent(this, ShizukuBridgeService.class);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent);
+            } else {
+                startService(intent);
+            }
+        } catch (Throwable e) {
+            Logger.logWarn(LOG_TAG, "Failed to start embedded Shizuku bridge: " + e.getMessage());
+        }
     }
 
     private void openOpenclawWebUi() {

@@ -2,6 +2,7 @@ package app.botdrop;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
@@ -10,7 +11,11 @@ import android.os.Looper;
 import com.termux.shared.logger.Logger;
 import com.termux.shared.termux.TermuxConstants;
 
+import app.botdrop.shizuku.ShizukuManager;
+import app.botdrop.shizuku.ShizukuShellExecutor;
+
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.concurrent.ExecutorService;
@@ -24,11 +29,27 @@ import java.util.concurrent.TimeUnit;
 public class BotDropService extends Service {
 
     private static final String LOG_TAG = "BotDropService";
+    private static final int SHIZUKU_COMMAND_CONNECT_TIMEOUT_MS = 5000;
+    private static final String SHIZUKU_BRIDGE_CONFIG_PATH =
+        TermuxConstants.TERMUX_HOME_DIR_PATH + "/.openclaw/shizuku-bridge.json";
 
     private final IBinder mBinder = new LocalBinder();
     private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
     private final Handler mHandler = new Handler(Looper.getMainLooper());
+    private final ShizukuManager mShizukuManager = ShizukuManager.getInstance();
+    private ShizukuShellExecutor mShizukuExecutor;
     private volatile boolean mUpdateInProgress = false;
+
+    private final ShizukuManager.StatusListener mShizukuStatusListener = status -> {
+        if (mShizukuExecutor == null) {
+            return;
+        }
+        if (status == ShizukuManager.Status.READY) {
+            mShizukuExecutor.bind();
+        } else {
+            mShizukuExecutor.unbind();
+        }
+    };
 
     public class LocalBinder extends Binder {
         public BotDropService getService() {
@@ -45,6 +66,10 @@ public class BotDropService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        mShizukuExecutor = new ShizukuShellExecutor(this);
+        mShizukuManager.init(this);
+        mShizukuManager.addStatusListener(mShizukuStatusListener);
+        mShizukuExecutor.bind();
         Logger.logDebug(LOG_TAG, "onCreate");
     }
 
@@ -58,6 +83,11 @@ public class BotDropService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mShizukuManager.removeStatusListener(mShizukuStatusListener);
+        if (mShizukuExecutor != null) {
+            mShizukuExecutor.shutdown();
+            mShizukuExecutor = null;
+        }
         mExecutor.shutdown();
         Logger.logDebug(LOG_TAG, "onDestroy");
     }
@@ -126,6 +156,65 @@ public class BotDropService extends Service {
      * Execute a shell command synchronously with configurable timeout
      */
     private CommandResult executeCommandSync(String command, int timeoutSeconds) {
+        String safeCommand = command == null ? "" : command.trim();
+        if (safeCommand.isEmpty()) {
+            return new CommandResult(false, "", "Command is empty", -1);
+        }
+
+        int timeoutMs = timeoutSeconds > 0 ? timeoutSeconds * 1000 : 60000;
+
+        if (mShizukuExecutor != null && shouldExecuteViaShizuku(safeCommand)) {
+            ensureShizukuBridgeConfig();
+            ShizukuShellExecutor.Result result = executeCommandViaShizuku(safeCommand, timeoutMs);
+            if (result != null && result.success) {
+                return new CommandResult(
+                    result.success,
+                    result.stdout == null ? "" : result.stdout,
+                    result.stderr == null ? "" : result.stderr,
+                    result.exitCode
+                );
+            }
+            if (result == null) {
+                Logger.logWarn(LOG_TAG, "Shizuku execution failed, fallback to local shell");
+            } else {
+                Logger.logWarn(LOG_TAG, "Shizuku execution returned code " + result.exitCode
+                    + ", fallback to local shell: " + (result.stderr == null ? "" : result.stderr));
+            }
+        } else if (shouldExecuteViaShizuku(safeCommand)) {
+            Logger.logWarn(LOG_TAG, shizukuUnavailableMessage());
+        } else {
+            Logger.logWarn(LOG_TAG, "OpenClaw command forced to local shell for compatibility");
+        }
+
+        return executeCommandViaLocal(safeCommand, timeoutSeconds);
+    }
+
+    private boolean shouldExecuteViaShizuku(String command) {
+        if (command == null || command.isEmpty()) {
+            return false;
+        }
+        return !command.contains("openclaw")
+            && !command.contains(".openclaw")
+            && !command.contains("shizuku-bridge.json");
+    }
+
+    private ShizukuShellExecutor.Result executeCommandViaShizuku(String safeCommand, int timeoutMs) {
+        if (mShizukuExecutor == null || mShizukuManager == null) {
+            return null;
+        }
+        if (!mShizukuExecutor.isBound()) {
+            Logger.logDebug(LOG_TAG, "Shizuku shell service not bound, waiting for connection");
+            if (!mShizukuExecutor.waitForConnection(Math.min(timeoutMs, SHIZUKU_COMMAND_CONNECT_TIMEOUT_MS))) {
+                Logger.logWarn(LOG_TAG, "waitForConnection timeout");
+                return null;
+            }
+        }
+
+        Logger.logInfo(LOG_TAG, "execute via shizuku bridge");
+        return mShizukuExecutor.executeSync(safeCommand, timeoutMs);
+    }
+
+    private CommandResult executeCommandViaLocal(String safeCommand, int timeoutSeconds) {
         StringBuilder stdout = new StringBuilder();
         StringBuilder stderr = new StringBuilder();
         int exitCode = -1;
@@ -136,12 +225,13 @@ public class BotDropService extends Service {
             // Write command to temp script file (same approach as installOpenclaw —
             // ProcessBuilder with script files works reliably, bash -c does not)
             java.io.File tmpDir = new java.io.File(TermuxConstants.TERMUX_TMP_PREFIX_DIR_PATH);
-            if (!tmpDir.exists()) tmpDir.mkdirs();
-            tmpScript = new java.io.File(tmpDir,
-                "cmd_" + System.currentTimeMillis() + ".sh");
+            if (!tmpDir.exists() && !tmpDir.mkdirs()) {
+                Logger.logWarn(LOG_TAG, "Failed to create temporary directory: " + tmpDir.getAbsolutePath());
+            }
+            tmpScript = new java.io.File(tmpDir, "cmd_" + System.currentTimeMillis() + ".sh");
             try (java.io.FileWriter fw = new java.io.FileWriter(tmpScript)) {
                 fw.write("#!" + com.termux.shared.termux.TermuxConstants.TERMUX_BIN_PREFIX_DIR_PATH + "/bash\n");
-                fw.write(command);
+                fw.write(safeCommand);
                 fw.write("\n");
             }
             tmpScript.setExecutable(true);
@@ -160,10 +250,10 @@ public class BotDropService extends Service {
 
             pb.redirectErrorStream(true);
 
-            Logger.logDebug(LOG_TAG, "Executing: " + command);
+            Logger.logDebug(LOG_TAG, "Executing via local shell: " + safeCommand);
             process = pb.start();
 
-            boolean isModelListCommand = command.contains("openclaw models list");
+            boolean isModelListCommand = safeCommand.contains("openclaw models list");
             int loggedLines = 0;
             final int MAX_VERBOSE_LINES = 20;
 
@@ -198,11 +288,64 @@ public class BotDropService extends Service {
             if (process != null) {
                 process.destroy();
             }
-            return new CommandResult(false, stdout.toString(),
-                stderr.toString() + "\nException: " + e.getMessage(), exitCode);
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            return new CommandResult(false, stdout.toString(), e.getMessage(), -1);
         } finally {
-            if (tmpScript != null) tmpScript.delete();
+            if (tmpScript != null && tmpScript.exists()) {
+                if (!tmpScript.delete()) {
+                    Logger.logWarn(LOG_TAG, "Failed to delete temporary command script: " + tmpScript.getAbsolutePath());
+                }
+            }
         }
+    }
+
+    private void ensureShizukuBridgeConfig() {
+        if (new File(SHIZUKU_BRIDGE_CONFIG_PATH).exists()) {
+            return;
+        }
+        startShizukuBridgeService();
+        if (!waitForShizukuBridgeConfig()) {
+            Logger.logWarn(LOG_TAG, "token write fail, bridge config not created in time");
+        }
+    }
+
+    private boolean waitForShizukuBridgeConfig() {
+        File config = new File(SHIZUKU_BRIDGE_CONFIG_PATH);
+        long timeoutAt = System.currentTimeMillis() + 3000;
+        while (System.currentTimeMillis() < timeoutAt) {
+            if (config.exists()) {
+                return true;
+            }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return config.exists();
+    }
+
+    private void startShizukuBridgeService() {
+        Intent intent = new Intent(this, app.botdrop.shizuku.ShizukuBridgeService.class);
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent);
+            } else {
+                startService(intent);
+            }
+        } catch (Throwable e) {
+            Logger.logWarn(LOG_TAG, "Failed to start ShizukuBridgeService: " + e.getMessage());
+        }
+    }
+
+    private String shizukuUnavailableMessage() {
+        if (mShizukuManager == null) {
+            return "Shizuku manager not initialized";
+        }
+        return "Embedded bridge unavailable: " + mShizukuManager.getStatus();
     }
 
     /**

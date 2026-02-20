@@ -130,6 +130,19 @@
             android:exported="false" />
 
         <service
+            android:name="app.botdrop.shizuku.ShizukuBridgeService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Shizuku bridge for privileged command execution" />
+        </service>
+
+        <service
+            android:name="app.botdrop.shizuku.ShellService"
+            android:exported="false" />
+
+        <service
             android:name="app.botdrop.GatewayMonitorService"
             android:exported="false"
             android:foregroundServiceType="specialUse">
