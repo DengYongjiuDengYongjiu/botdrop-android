@@ -98,8 +98,19 @@ ensure_github_token() {
     return 0
   fi
 
-  echo "GITHUB_TOKEN or GH_TOKEN is required for --promote or --overwrite." >&2
-  exit 1
+  if ! command -v gh >/dev/null 2>&1; then
+    echo "gh CLI is required for --promote or --overwrite when GITHUB_TOKEN/GH_TOKEN is not set." >&2
+    exit 1
+  fi
+
+  local resolved_token
+  resolved_token="$(gh auth token 2>/dev/null || true)"
+  if [[ -z "$resolved_token" ]]; then
+    echo "GITHUB_TOKEN or GH_TOKEN is required for --promote or --overwrite. Authenticate with 'gh auth login' first." >&2
+    exit 1
+  fi
+
+  GH_TOKEN="$resolved_token"
 }
 
 run_gh() {
@@ -109,9 +120,9 @@ run_gh() {
   fi
 
   if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-    GH_TOKEN="$GITHUB_TOKEN" gh "$@"
+    GH_TOKEN="${GITHUB_TOKEN}" gh "$@"
   else
-    GH_TOKEN="$GH_TOKEN" gh "$@"
+    GH_TOKEN="${GH_TOKEN}" gh "$@"
   fi
 }
 
