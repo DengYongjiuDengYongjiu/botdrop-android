@@ -73,9 +73,7 @@ public class OpenClawUpdateChecker {
         // Query npm registry via shell command
         // Use pipefail so exit code reflects npm failure, not tr's.
         // Use tail -1 to grab only the version line (npm may print warnings to stdout).
-        service.executeCommand(
-            "set -o pipefail; npm view openclaw version 2>/dev/null | tail -1 | tr -d '[:space:]'",
-            result -> {
+        service.executeCommand(OpenclawVersionUtils.buildLatestVersionCommand(), result -> {
                 // This callback runs on the main thread
                 Log.e(LOG_TAG, "npm result: success=" + result.success +
                     " exit=" + result.exitCode + " stdout=[" + result.stdout + "]");

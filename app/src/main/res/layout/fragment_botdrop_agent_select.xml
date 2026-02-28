@@ -11,7 +11,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose Your Agent"
+        android:text="@string/botdrop_choose_agent"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/botdrop_on_background"
@@ -41,7 +41,7 @@
                 android:layout_width="64dp"
                 android:layout_height="64dp"
                 android:src="@drawable/agent_openclaw"
-                android:contentDescription="OpenClaw"
+                android:contentDescription="@string/botdrop_openclaw"
                 android:layout_marginEnd="16dp" />
 
             <!-- Info -->
@@ -55,7 +55,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="OpenClaw"
+                    android:text="@string/botdrop_openclaw"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/botdrop_on_background"
@@ -64,7 +64,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="The AI that actually does things."
+                    android:text="@string/botdrop_openclaw_desc"
                     android:textSize="13sp"
                     android:textColor="@color/botdrop_secondary_text"
                     android:layout_marginBottom="2dp" />
@@ -73,7 +73,7 @@
                     android:id="@+id/agent_openclaw_url"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="openclaw.ai"
+                    android:text="@string/botdrop_openclaw_site"
                     android:textSize="12sp"
                     android:textColor="#1976D2"
                     android:alpha="0.8" />
@@ -86,7 +86,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:minHeight="36dp"
-                android:text="Install"
+                android:text="@string/botdrop_install"
                 android:textSize="11sp"
                 android:minWidth="72dp"
                 android:background="@drawable/botdrop_button_bg"
@@ -100,7 +100,7 @@
             android:id="@+id/agent_openclaw_version_manager"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Versions"
+            android:text="@string/botdrop_versions"
             android:textSize="9sp"
             android:paddingStart="8dp"
             android:paddingEnd="8dp"
@@ -109,7 +109,7 @@
             android:gravity="center"
             android:background="@drawable/botdrop_button_red_outline_bg"
             android:textColor="@color/botdrop_accent"
-            android:contentDescription="OpenClaw version manager"
+            android:contentDescription="@string/botdrop_openclaw_version_manager"
             android:layout_gravity="end|top"
             android:layout_marginTop="6dp"
             android:layout_marginEnd="6dp"
@@ -142,7 +142,7 @@
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:src="@drawable/agent_owliabot"
-            android:contentDescription="OwliaBot"
+            android:contentDescription="@string/botdrop_owliabot"
             android:layout_marginEnd="16dp" />
 
         <!-- Info -->
@@ -156,7 +156,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="OwliaBot"
+                android:text="@string/botdrop_owliabot"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/botdrop_on_background"
@@ -165,7 +165,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="A leaner, safer crypto-native OpenClaw."
+                android:text="@string/botdrop_owliabot_desc"
                 android:textSize="13sp"
                 android:textColor="@color/botdrop_secondary_text"
                 android:layout_marginBottom="2dp" />
@@ -173,7 +173,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="owlia.bot"
+                android:text="@string/botdrop_owliabot_site"
                 android:textSize="12sp"
                 android:textColor="#1976D2"
                 android:alpha="0.8" />
@@ -185,7 +185,7 @@
             android:id="@+id/agent_owliabot_soon"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
-            android:text="Soon"
+            android:text="@string/botdrop_soon"
             android:textSize="13sp"
             android:minWidth="80dp"
             android:enabled="false" />

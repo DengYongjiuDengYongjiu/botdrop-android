@@ -26,7 +26,7 @@
                 android:id="@+id/update_banner_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Update available"
+                android:text="@string/botdrop_update_available"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 android:textColor="@color/botdrop_accent"
@@ -43,7 +43,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:text="Download"
+                    android:text="@string/botdrop_download"
                     android:textAllCaps="false"
                     android:background="@drawable/botdrop_button_bg"
                     android:textColor="#1A1A1A"
@@ -55,7 +55,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
-                    android:text="Dismiss"
+                    android:text="@string/botdrop_dismiss"
                     android:textAllCaps="false"
                     android:background="@drawable/botdrop_button_outline_bg"
                     android:textColor="@color/botdrop_accent" />
@@ -78,7 +78,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_back_chevron"
-                android:contentDescription="Back"
+                android:contentDescription="@string/botdrop_back"
                 android:background="?android:attr/selectableItemBackgroundBorderless"
                 android:tint="@color/botdrop_accent"
                 android:layout_alignParentStart="true"
@@ -101,13 +101,13 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/botdrop_logo"
-                    android:contentDescription="BotDrop"
+                    android:contentDescription="@string/application_name"
                     android:layout_marginEnd="8dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BotDrop"
+                    android:text="@string/application_name"
                     android:textSize="24sp"
                     android:textStyle="bold"
                     android:textColor="@color/botdrop_on_background" />
@@ -142,7 +142,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginStart="12dp"
-                        android:text="Gateway Stopped"
+                        android:text="@string/botdrop_gateway_stopped"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="@color/botdrop_on_background" />
@@ -178,7 +178,7 @@
                         android:id="@+id/btn_check_openclaw_update"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Check OpenClaw updates"
+                        android:text="@string/botdrop_check_openclaw_updates"
                         android:textSize="13sp"
                         android:textColor="#1A1A1A"
                         android:paddingStart="10dp"
@@ -205,7 +205,7 @@
                         android:id="@+id/btn_view_openclaw_log"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="View log"
+                        android:text="@string/botdrop_view_log"
                         android:textSize="13sp"
                         android:textColor="#1A1A1A"
                         android:paddingStart="10dp"
@@ -223,7 +223,7 @@
                         android:id="@+id/btn_open_openclaw_web_ui"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Open Web UI"
+                        android:text="@string/botdrop_open_web_ui"
                         android:textSize="13sp"
                         android:textColor="#1A1A1A"
                         android:paddingStart="10dp"
@@ -251,7 +251,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="First interaction can take 2-3 minutes while the agent warms up."
+                android:text="@string/botdrop_first_interaction_tip"
                 android:textSize="13sp"
                 android:textColor="@color/botdrop_secondary_text" />
         </LinearLayout>
@@ -271,7 +271,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="6dp"
-                android:text="Gateway issue detected"
+                android:text="@string/botdrop_gateway_issue_detected"
                 android:textColor="@color/status_disconnected"
                 android:textSize="13sp"
                 android:textStyle="bold" />
@@ -297,7 +297,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Channels"
+                    android:text="@string/botdrop_channels"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/botdrop_secondary_text"
@@ -321,7 +321,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="📱 Telegram"
+                        android:text="@string/botdrop_channel_telegram"
                         android:textSize="16sp"
                         android:textColor="@color/botdrop_on_background" />
 
@@ -329,7 +329,7 @@
                         android:id="@+id/telegram_status"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="● Connected"
+                        android:text="@string/botdrop_connected"
                         android:textSize="14sp"
                         android:textColor="#4CAF50" />
 
@@ -360,7 +360,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="💬 Discord"
+                        android:text="@string/botdrop_channel_discord"
                         android:textSize="16sp"
                         android:textColor="@color/botdrop_on_background" />
 
@@ -400,7 +400,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="📨 Feishu"
+                        android:text="@string/botdrop_channel_feishu"
                         android:textSize="16sp"
                         android:textColor="@color/botdrop_on_background" />
 
@@ -426,7 +426,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Current Model"
+            android:text="@string/botdrop_current_model"
             android:textSize="14sp"
             android:textColor="@color/botdrop_secondary_text"
             android:fontFamily="sans-serif-medium"
@@ -461,7 +461,7 @@
                     android:id="@+id/btn_change_model"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Change Model"
+                    android:text="@string/botdrop_change_model"
                     android:background="@drawable/botdrop_button_outline_bg"
                     android:textColor="@color/botdrop_accent"
                     android:paddingStart="16dp"
@@ -482,7 +482,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
-                android:text="▶ Start"
+                android:text="@string/botdrop_start"
                 android:textAllCaps="false"
                 android:background="@drawable/botdrop_button_bg"
                 android:textColor="#1A1A1A"
@@ -494,7 +494,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
-                android:text="⏹ Stop"
+                android:text="@string/botdrop_stop"
                 android:textAllCaps="false"
                 android:background="@drawable/botdrop_button_outline_bg"
                 android:textColor="@color/botdrop_accent" />
@@ -505,7 +505,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="🔄 Restart"
+            android:text="@string/botdrop_restart"
             android:textAllCaps="false"
             android:background="@drawable/botdrop_button_bg"
             android:textColor="#1A1A1A"
@@ -523,7 +523,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
-                android:text="Backup"
+                android:text="@string/botdrop_backup"
                 android:textAllCaps="false"
                 android:background="@drawable/botdrop_button_outline_bg"
                 android:textColor="@color/botdrop_accent" />
@@ -534,7 +534,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
-                android:text="Restore"
+                android:text="@string/botdrop_restore"
                 android:textAllCaps="false"
                 android:background="@drawable/botdrop_button_outline_bg"
                 android:textColor="@color/botdrop_accent" />
@@ -552,7 +552,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="💡 Tip"
+                    android:text="@string/botdrop_tip"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/botdrop_secondary_text"
@@ -561,7 +561,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Chat with BotDrop on your connected channel to configure more settings, add channels, or change models."
+                    android:text="@string/botdrop_chat_tip"
                     android:textSize="14sp"
                     android:textColor="@color/botdrop_on_background" />
         </LinearLayout>
@@ -580,7 +580,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="SSH Access"
+                    android:text="@string/botdrop_ssh_access"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/botdrop_secondary_text"
@@ -600,7 +600,7 @@
             android:id="@+id/btn_open_terminal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🖥 Open Terminal"
+            android:text="@string/botdrop_open_terminal"
             android:textAllCaps="false"
             android:background="@drawable/botdrop_button_outline_bg"
             android:textColor="@color/botdrop_accent" />

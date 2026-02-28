@@ -40,7 +40,7 @@
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/botdrop_on_background"
-                android:text="Provider Name" />
+                android:text="@string/botdrop_provider_name" />
 
             <TextView
                 android:id="@+id/provider_recommended_badge"
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:textSize="13sp"
             android:textColor="@color/botdrop_secondary_text"
-            android:text="Auth method hint" />
+            android:text="@string/botdrop_auth_method_hint" />
 
     </LinearLayout>
 

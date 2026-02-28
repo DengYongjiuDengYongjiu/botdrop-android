@@ -87,7 +87,7 @@ public class ModelListAdapter extends RecyclerView.Adapter<ModelListAdapter.View
             if (!TextUtils.isEmpty(model.statusText)) {
                 meta = model.statusText;
             } else {
-                meta = "Select provider and choose model";
+                meta = holder.itemView.getContext().getString(R.string.botdrop_select_provider_choose_model);
             }
         } else {
             title = modelName;

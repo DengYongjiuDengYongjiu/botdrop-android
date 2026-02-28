@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="← Step 2/4"
+            android:text="@string/botdrop_step_2_4_with_back"
             android:textSize="14sp"
             android:textColor="@color/botdrop_secondary_text"
             android:layout_marginBottom="16dp" />
@@ -23,7 +23,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Choose your AI"
+            android:text="@string/botdrop_choose_your_ai"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="@color/botdrop_on_background"
@@ -32,7 +32,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Select an AI model to power your bot"
+            android:text="@string/botdrop_select_ai_model_desc"
             android:textSize="14sp"
             android:textColor="@color/botdrop_secondary_text"
             android:layout_marginBottom="32dp" />
@@ -41,7 +41,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="AI Model"
+            android:text="@string/botdrop_ai_model"
             android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/botdrop_on_background"
@@ -59,7 +59,7 @@
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_weight="1"
-                android:hint="No model selected"
+                android:hint="@string/botdrop_no_model_selected"
                 android:textSize="12sp"
                 android:textColor="@color/botdrop_on_background"
                 android:textColorHint="@color/botdrop_secondary_text"
@@ -76,7 +76,7 @@
                 android:id="@+id/auth_select_button"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
-                android:text="Select"
+                android:text="@string/botdrop_select"
                 android:background="@drawable/botdrop_button_bg"
                 android:textColor="@color/botdrop_background"
                 android:paddingStart="24dp"
@@ -96,7 +96,7 @@
                 android:id="@+id/auth_key_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="API Key"
+                android:text="@string/botdrop_api_key"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:textColor="@color/botdrop_on_background"
@@ -114,7 +114,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="Paste your API key here"
+                    android:hint="@string/botdrop_paste_api_key_here"
                     android:inputType="textPassword"
                     android:background="@android:color/transparent"
                     android:textColor="@color/botdrop_on_background"
@@ -127,7 +127,7 @@
                         android:layout_height="48dp"
                         android:src="@android:drawable/ic_menu_view"
                         android:background="?android:attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Toggle visibility" />
+                        android:contentDescription="@string/botdrop_toggle_visibility" />
 
             </LinearLayout>
 
@@ -142,7 +142,7 @@
                     android:id="@+id/auth_base_url_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Custom Base URL"
+                    android:text="@string/botdrop_custom_base_url"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/botdrop_on_background"
@@ -161,7 +161,7 @@
                         android:id="@+id/auth_base_url_input"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="e.g. https://api.example.com/v1"
+                        android:hint="@string/botdrop_custom_base_url_example"
                         android:inputType="textUri"
                         android:background="@android:color/transparent"
                         android:padding="12dp"
@@ -196,7 +196,7 @@
                 android:id="@+id/auth_key_verify_button"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Verify &amp; Continue"
+                android:text="@string/botdrop_verify_continue"
                 android:layout_marginTop="24dp"
                 android:background="@drawable/botdrop_button_bg"
                 android:textColor="#1A1A1A"

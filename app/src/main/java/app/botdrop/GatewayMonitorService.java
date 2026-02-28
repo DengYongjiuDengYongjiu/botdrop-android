@@ -297,9 +297,9 @@ public class GatewayMonitorService extends Service {
         PendingIntent openPendingIntent = PendingIntent.getActivity(this, 101, openIntent, pendingIntentFlags);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, UPDATE_NOTIFICATION_CHANNEL_ID)
-            .setContentTitle("BotDrop 更新")
-            .setContentText("检测到新版本：v" + latestVersion)
-            .setStyle(new NotificationCompat.BigTextStyle().bigText("检测到新版本：v" + latestVersion + "\n\n点击查看详情"))
+            .setContentTitle(getString(R.string.botdrop_update_title))
+            .setContentText(getString(R.string.botdrop_new_version_detected, latestVersion))
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(getString(R.string.botdrop_new_version_detected_detail, latestVersion)))
             .setSmallIcon(R.drawable.ic_service_notification)
             .setContentIntent(openPendingIntent)
             .setAutoCancel(true)
@@ -323,10 +323,10 @@ public class GatewayMonitorService extends Service {
 
         NotificationChannel updateChannel = new NotificationChannel(
             UPDATE_NOTIFICATION_CHANNEL_ID,
-            "BotDrop Updates",
+            getString(R.string.botdrop_update_channel_name),
             NotificationManager.IMPORTANCE_DEFAULT
         );
-        updateChannel.setDescription("Notifies when a new BotDrop version is available.");
+        updateChannel.setDescription(getString(R.string.botdrop_update_channel_description));
         manager.createNotificationChannel(updateChannel);
     }
 

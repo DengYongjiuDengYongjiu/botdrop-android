@@ -29,7 +29,7 @@
         android:id="@+id/placeholder_continue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Continue →"
+        android:text="@string/botdrop_continue_arrow"
         android:background="@drawable/botdrop_button_bg"
         android:textColor="#1A1A1A"
         android:textStyle="bold" />

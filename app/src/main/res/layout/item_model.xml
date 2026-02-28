@@ -34,7 +34,7 @@
             android:textStyle="bold"
             android:textColor="@color/botdrop_background"
             android:background="@drawable/model_selector_badge_bg"
-            android:contentDescription="Model badge" />
+            android:contentDescription="@string/botdrop_model_badge" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -68,7 +68,7 @@
             android:text="›"
             android:textSize="20sp"
             android:textColor="@color/botdrop_accent"
-            android:contentDescription="Open" />
+            android:contentDescription="@string/botdrop_open" />
     </LinearLayout>
 
 </LinearLayout>

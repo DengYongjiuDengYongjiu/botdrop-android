@@ -10,7 +10,7 @@
             android:id="@+id/openclaw_log_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="OpenClaw Gateway Log"
+            android:text="@string/botdrop_openclaw_gateway_log"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/botdrop_on_background"
@@ -55,7 +55,7 @@
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/botdrop_button_bg"
-                android:text="Copy"
+                android:text="@string/botdrop_copy"
                 android:textAllCaps="false"
                 android:textColor="#1A1A1A"
                 android:textStyle="bold" />
@@ -66,7 +66,7 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:background="@drawable/botdrop_button_outline_bg"
-                android:text="Close"
+                android:text="@string/botdrop_close"
                 android:textAllCaps="false"
                 android:textColor="@color/botdrop_accent" />
         </LinearLayout>

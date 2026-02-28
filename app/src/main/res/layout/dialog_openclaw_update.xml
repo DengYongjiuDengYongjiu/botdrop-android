@@ -27,7 +27,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Stopping gateway"
+            android:text="@string/botdrop_stopping_gateway"
             android:textSize="14sp"
             android:textColor="@color/botdrop_on_background" />
     </LinearLayout>
@@ -54,7 +54,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Installing update"
+            android:text="@string/botdrop_installing_update"
             android:textSize="14sp"
             android:textColor="@color/botdrop_on_background" />
     </LinearLayout>
@@ -81,7 +81,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Finalizing"
+            android:text="@string/botdrop_finalizing"
             android:textSize="14sp"
             android:textColor="@color/botdrop_on_background" />
     </LinearLayout>
@@ -108,7 +108,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Starting gateway"
+            android:text="@string/botdrop_starting_gateway"
             android:textSize="14sp"
             android:textColor="@color/botdrop_on_background" />
     </LinearLayout>
@@ -135,7 +135,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Refreshing model list"
+            android:text="@string/botdrop_refreshing_model_list"
             android:textSize="14sp"
             android:textColor="@color/botdrop_on_background" />
     </LinearLayout>
@@ -145,7 +145,7 @@
         android:id="@+id/update_status_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="This may take a few minutes"
+        android:text="@string/botdrop_may_take_a_few_minutes"
         android:textSize="13sp"
         android:textColor="@color/botdrop_secondary_text"
         android:layout_marginTop="8dp" />

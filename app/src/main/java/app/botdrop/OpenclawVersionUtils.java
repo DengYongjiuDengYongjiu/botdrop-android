@@ -15,7 +15,11 @@ import java.util.List;
 public final class OpenclawVersionUtils {
 
     public static final String VERSION_PREFIX = "openclaw@";
-    public static final String VERSIONS_COMMAND = "npm view openclaw versions --json";
+    public static final String DEFAULT_NPM_REGISTRY = "https://registry.npmjs.org/";
+    public static final String CN_NPM_REGISTRY = "https://registry.npmmirror.com/";
+    public static final int NPM_REGISTRY_CACHE_TTL_SECONDS = 24 * 60 * 60;
+    public static final String VERSIONS_COMMAND = buildVersionsCommand();
+    public static final String LATEST_VERSION_COMMAND = buildLatestVersionCommand();
     public static final int VERSION_LIST_LIMIT = 20;
 
     public interface VersionListCallback {
@@ -73,6 +77,26 @@ public final class OpenclawVersionUtils {
             fallback.add(current);
         }
         return sortAndLimit(fallback);
+    }
+
+    public static String buildVersionsCommand() {
+        return buildNpmCommandPrefix() + "npm view openclaw versions --json";
+    }
+
+    public static String buildLatestVersionCommand() {
+        return "set -o pipefail; " + buildNpmCommandPrefix()
+            + "npm view openclaw version 2>/dev/null | tail -1 | tr -d '[:space:]'";
+    }
+
+    public static String buildNpmInstallCommand(String packageSpec) {
+        String safePackage = shellQuoteSingle(TextUtils.isEmpty(packageSpec) ? "openclaw@latest" : packageSpec);
+        return buildNpmCommandPrefix() + "npm install -g " + safePackage + " --ignore-scripts --force";
+    }
+
+    public static String buildNpmCommandPrefix() {
+        return buildNpmRegistryResolverFunction()
+            + "NPM_CONFIG_REGISTRY=\"$(botdrop_resolve_npm_registry)\"\n"
+            + "export NPM_CONFIG_REGISTRY\n";
     }
 
     /**
@@ -194,5 +218,135 @@ public final class OpenclawVersionUtils {
         } catch (Exception ignored) {
             return b.compareToIgnoreCase(a);
         }
+    }
+
+    private static String buildNpmRegistryResolverFunction() {
+        return "botdrop_resolve_npm_registry() {\n"
+            + "  default_registry=\"" + DEFAULT_NPM_REGISTRY + "\"\n"
+            + "  cn_registry=\"" + CN_NPM_REGISTRY + "\"\n"
+            + "  cache_file=\"$HOME/.botdrop_npm_registry_cache\"\n"
+            + "  cache_ttl_seconds=" + NPM_REGISTRY_CACHE_TTL_SECONDS + "\n"
+            + "  gateway=\"\"\n"
+            + "  resolved=\"\"\n"
+            + "  country=\"\"\n"
+            + "  npmjs_probe=\"\"\n"
+            + "  npmmirror_probe=\"\"\n"
+            + "  resolved_probe=\"\"\n"
+            + "  cache_mid=0\n"
+            + "  now=\"$(date +%s 2>/dev/null || echo 0)\"\n"
+            + "  cache_gateway=\"\"\n"
+            + "  cache_expiry=\"\"\n"
+            + "  cache_registry=\"\"\n"
+            + "\n"
+            + "  if [ -n \"$BOTDROP_NPM_REGISTRY\" ]; then\n"
+            + "    case \"$BOTDROP_NPM_REGISTRY\" in\n"
+            + "      http://*|https://*)\n"
+            + "        echo \"$BOTDROP_NPM_REGISTRY\"\n"
+            + "        ;;\n"
+            + "      *)\n"
+            + "        echo \"$default_registry\"\n"
+            + "        ;;\n"
+            + "    esac\n"
+            + "    return 0\n"
+            + "  fi\n"
+            + "\n"
+            + "  if command -v ip >/dev/null 2>&1; then\n"
+            + "    gateway=\"$(ip route 2>/dev/null | awk '/^default/ {print $3; exit}')\"\n"
+            + "  fi\n"
+            + "  if [ -z \"$gateway\" ]; then\n"
+            + "    gateway=\"unknown\"\n"
+            + "  fi\n"
+            + "\n"
+            + "  if [ -f \"$cache_file\" ]; then\n"
+            + "    cache_gateway=\"$(awk -F= '/^gateway=/{print $2; exit}' \"$cache_file\")\"\n"
+            + "    cache_expiry=\"$(awk -F= '/^expiry=/{print $2; exit}' \"$cache_file\")\"\n"
+            + "    cache_registry=\"$(awk -F= '/^registry=/{print $2; exit}' \"$cache_file\")\"\n"
+            + "    case \"$cache_registry\" in\n"
+            + "      \"$default_registry\"|\"$cn_registry\")\n"
+            + "        ;;\n"
+            + "      *)\n"
+            + "        cache_registry=\"\"\n"
+            + "        ;;\n"
+            + "    esac\n"
+            + "    case \"$cache_expiry\" in\n"
+            + "      ''|*[!0-9]*)\n"
+            + "        cache_expiry=0\n"
+            + "        ;;\n"
+            + "    esac\n"
+            + "    if [ \"$gateway\" = \"$cache_gateway\" ] && [ -n \"$cache_registry\" ] &&\n"
+            + "      [ \"$cache_expiry\" -ge \"$now\" ]; then\n"
+            + "      resolved=\"$cache_registry\"\n"
+            + "    fi\n"
+            + "  fi\n"
+            + "\n"
+            + "  if [ -n \"$resolved\" ]; then\n"
+            + "    # Re-validate only when cache is past half its TTL to avoid extra latency on fresh entries.\n"
+            + "    cache_mid=$((cache_expiry - cache_ttl_seconds / 2))\n"
+            + "    if [ \"$now\" -ge \"$cache_mid\" ]; then\n"
+            + "      if command -v curl >/dev/null 2>&1; then\n"
+            + "        resolved_probe=\"$(curl -m 2 -o /dev/null -s -w '%{http_code}' \"${resolved}openclaw\" 2>/dev/null)\"\n"
+            + "      elif command -v wget >/dev/null 2>&1; then\n"
+            + "        wget -q -T 2 -t 1 --spider \"${resolved}openclaw\" >/dev/null 2>&1 && resolved_probe=200\n"
+            + "      fi\n"
+            + "      if [ \"$resolved_probe\" != \"200\" ]; then\n"
+            + "        resolved=\"\"\n"
+            + "        resolved_probe=\"\"\n"
+            + "        cache_registry=\"\"\n"
+            + "      fi\n"
+            + "    fi\n"
+            + "  fi\n"
+            + "\n"
+            + "  if [ -z \"$resolved\" ]; then\n"
+            + "    # Prefer direct registry reachability probing over GeoIP.\n"
+            + "    # - CN networks often fail/slow on npmjs but work on npmmirror.\n"
+            + "    # - This avoids relying on third-party GeoIP endpoints.\n"
+            + "    if command -v curl >/dev/null 2>&1; then\n"
+            + "      npmjs_probe=\"$(curl -m 2 -o /dev/null -s -w '%{http_code}' \"${default_registry}openclaw\" 2>/dev/null)\"\n"
+            + "      npmmirror_probe=\"$(curl -m 2 -o /dev/null -s -w '%{http_code}' \"${cn_registry}openclaw\" 2>/dev/null)\"\n"
+            + "    elif command -v wget >/dev/null 2>&1; then\n"
+            + "      wget -q -T 2 -t 1 --spider \"${default_registry}openclaw\" >/dev/null 2>&1 && npmjs_probe=200\n"
+            + "      wget -q -T 2 -t 1 --spider \"${cn_registry}openclaw\" >/dev/null 2>&1 && npmmirror_probe=200\n"
+            + "    fi\n"
+            + "\n"
+            + "    if [ \"$npmmirror_probe\" = \"200\" ] && [ \"$npmjs_probe\" != \"200\" ]; then\n"
+            + "      resolved=\"$cn_registry\"\n"
+            + "    elif [ \"$npmjs_probe\" = \"200\" ]; then\n"
+            + "      resolved=\"$default_registry\"\n"
+            + "    elif [ \"$npmmirror_probe\" = \"200\" ]; then\n"
+            + "      resolved=\"$cn_registry\"\n"
+            + "    else\n"
+            + "      # Fallback to previous GeoIP heuristic only when probes are unavailable.\n"
+            + "      if command -v curl >/dev/null 2>&1; then\n"
+            + "        country=\"$(curl -m 2 -fsSL https://ipinfo.io/country 2>/dev/null | tr -d '\\r\\n' | tr '[:lower:]' '[:upper:]')\"\n"
+            + "      elif command -v wget >/dev/null 2>&1; then\n"
+            + "        country=\"$(wget -qO- --timeout=2 --tries=1 https://ipinfo.io/country 2>/dev/null | tr -d '\\r\\n' | tr '[:lower:]' '[:upper:]')\"\n"
+            + "      fi\n"
+            + "      if [ \"$country\" = \"CN\" ]; then\n"
+            + "        resolved=\"$cn_registry\"\n"
+            + "      else\n"
+            + "        resolved=\"$default_registry\"\n"
+            + "      fi\n"
+            + "    fi\n"
+            + "\n"
+            + "    {\n"
+            + "      echo \"gateway=$gateway\"\n"
+            + "      echo \"expiry=$((now + cache_ttl_seconds))\"\n"
+            + "      echo \"registry=$resolved\"\n"
+            + "    } > \"$cache_file\"\n"
+            + "  fi\n"
+            + "\n"
+            + "  if [ -z \"$resolved\" ]; then\n"
+            + "    resolved=\"$default_registry\"\n"
+            + "  fi\n"
+            + "  printf \"gateway=%s\\nregistry=%s\\n\" \"$gateway\" \"$resolved\" > \"$HOME/.botdrop_last_npm_registry\"\n"
+            + "  echo \"$resolved\"\n"
+            + "}\n";
+    }
+
+    private static String shellQuoteSingle(String value) {
+        if (TextUtils.isEmpty(value)) {
+            return "''";
+        }
+        return "'" + value.replace("'", "'\"'\"'") + "'";
     }
 }

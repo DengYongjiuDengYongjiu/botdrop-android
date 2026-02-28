@@ -25,7 +25,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Set provider credentials"
+                android:text="@string/botdrop_set_provider_credentials"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/botdrop_on_background"
@@ -38,7 +38,7 @@
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
                 android:tint="@color/botdrop_on_background"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Close" />
+                android:contentDescription="@string/botdrop_close" />
         </LinearLayout>
 
         <View
@@ -83,7 +83,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Provider ID"
+                    android:text="@string/botdrop_provider_id"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/botdrop_on_background"
@@ -101,7 +101,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:minHeight="46dp"
-                        android:hint="e.g., moonshot"
+                        android:hint="@string/botdrop_provider_id_hint"
                         android:inputType="text"
                         android:imeOptions="actionDone"
                         android:background="@android:color/transparent"
@@ -124,7 +124,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Custom Base URL"
+                    android:text="@string/botdrop_custom_base_url"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/botdrop_on_background"
@@ -142,7 +142,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:minHeight="46dp"
-                        android:hint="https://api.example.com/v1"
+                        android:hint="@string/botdrop_custom_base_url_hint"
                         android:inputType="textUri"
                         android:imeOptions="actionDone"
                         android:background="@android:color/transparent"
@@ -167,7 +167,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:minHeight="46dp"
-                    android:hint="Enter API key"
+                    android:hint="@string/botdrop_enter_api_key"
                     android:inputType="textPassword"
                     android:imeOptions="actionDone"
                     android:background="@android:color/transparent"
@@ -181,7 +181,7 @@
                 android:id="@+id/change_model_cached_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Saved keys"
+                android:text="@string/botdrop_saved_keys"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:textColor="@color/botdrop_secondary_text"
@@ -214,7 +214,7 @@
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
                 android:background="@drawable/botdrop_button_outline_bg"
-                android:text="Cancel"
+                android:text="@string/botdrop_cancel"
                 android:textAllCaps="false"
                 android:textColor="@color/botdrop_accent"
                 android:textStyle="bold" />
@@ -226,7 +226,7 @@
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/botdrop_button_bg"
-                android:text="Continue"
+                android:text="@string/botdrop_continue"
                 android:textAllCaps="false"
                 android:textColor="#1A1A1A"
                 android:textStyle="bold" />

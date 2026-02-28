@@ -517,7 +517,6 @@ public class BotDropService extends Service {
                 Logger.logInfo(LOG_TAG, "Update: running npm install");
                 notifyUpdateStep(callback, "Installing update...");
                 String prefix = TermuxConstants.TERMUX_PREFIX_DIR_PATH;
-                String safePackage = shellQuoteSingle(packageVersion);
                 String npmCmd =
                     "export PREFIX=" + prefix + "\n" +
                     "export HOME=" + TermuxConstants.TERMUX_HOME_DIR_PATH + "\n" +
@@ -525,7 +524,7 @@ public class BotDropService extends Service {
                     "export TMPDIR=$PREFIX/tmp\n" +
                     "export SSL_CERT_FILE=$PREFIX/etc/tls/cert.pem\n" +
                     "export NODE_OPTIONS=--dns-result-order=ipv4first\n" +
-                    "npm install -g " + safePackage + " --ignore-scripts --force 2>&1\n";
+                    OpenclawVersionUtils.buildNpmInstallCommand(packageVersion) + " 2>&1\n";
                 CommandResult npmResult = executeCommandSync(npmCmd, 300);
                 if (!npmResult.success) {
                     String tail = extractTail(npmResult.stdout, 15);
@@ -673,13 +672,6 @@ public class BotDropService extends Service {
             return trimmed;
         }
         return "openclaw@" + trimmed;
-    }
-
-    private String shellQuoteSingle(String value) {
-        if (value == null) {
-            return "''";
-        }
-        return "'" + value.replace("'", "'\"'\"'") + "'";
     }
 
     private void notifyUpdateStep(UpdateProgressCallback callback, String message) {

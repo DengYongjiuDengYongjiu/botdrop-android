@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE resources [
+    <!ENTITY TERMUX_PACKAGE_NAME "app.botdrop">
+    <!ENTITY TERMUX_APP_NAME "BotDrop">
+    <!ENTITY TERMUX_API_APP_NAME "BotDrop:API">
+    <!ENTITY TERMUX_BOOT_APP_NAME "BotDrop:Boot">
+    <!ENTITY TERMUX_FLOAT_APP_NAME "BotDrop:Float">
+    <!ENTITY TERMUX_STYLING_APP_NAME "BotDrop:Styling">
+    <!ENTITY TERMUX_TASKER_APP_NAME "BotDrop:Tasker">
+    <!ENTITY TERMUX_WIDGET_APP_NAME "BotDrop:Widget">
+    ]>
+
+<resources>
+
+    <string name="application_name">&TERMUX_APP_NAME;</string>
+    <string name="shared_user_label">&TERMUX_APP_NAME; 用户</string>
+
+
+
+    <!-- Termux RUN_COMMAND permission -->
+    <string name="permission_run_command_label">在 &TERMUX_APP_NAME; 环境中运行命令</string>
+    <string name="permission_run_command_description">在 &TERMUX_APP_NAME;
+        环境中执行任意命令并访问文件</string>
+
+
+
+    <!-- Termux Bootstrap Packages Installation -->
+    <string name="bootstrap_installer_body">正在安装 bootstrap 软件包…</string>
+    <string name="bootstrap_error_title">无法安装 bootstrap</string>
+    <string name="bootstrap_error_body">&TERMUX_APP_NAME; 无法安装 bootstrap 软件包。</string>
+    <string name="bootstrap_error_abort">中止</string>
+    <string name="bootstrap_error_try_again">重试</string>
+    <string name="bootstrap_error_not_primary_user_message">&TERMUX_APP_NAME; 只能由主用户运行。
+        \n为 &TERMUX_APP_NAME; 编译的 bootstrap 二进制文件内置了 $PREFIX 路径，且只能安装到以下路径：
+%1$s。</string>
+    <string name="bootstrap_error_installed_on_portable_sd">&TERMUX_APP_NAME; 无法安装在设备的
+        可携带/外部/可移除 SD 卡上。
+        \n为 &TERMUX_APP_NAME; 编译的 bootstrap 二进制文件内置了 $PREFIX 路径，且只能安装到以下路径：
+%1$s。</string>
+
+
+
+    <!-- Terminal Sidebar and Shortcuts -->
+    <string name="action_new_session">新会话</string>
+    <string name="action_new_session_failsafe">故障安全</string>
+    <string name="title_max_terminals_reached">已达到终端数量上限</string>
+    <string name="msg_max_terminals_reached">请先关闭现有终端再创建新的。</string>
+
+    <string name="title_rename_session">设置会话名称</string>
+    <string name="action_rename_session_confirm">设置</string>
+    <string name="title_create_named_session">新建命名会话</string>
+    <string name="action_create_named_session_confirm">创建</string>
+
+    <string name="action_toggle_soft_keyboard">键盘</string>
+
+    <string name="msg_enabling_terminal_toolbar">正在启用终端工具栏</string>
+    <string name="msg_disabling_terminal_toolbar">正在禁用终端工具栏</string>
+
+
+
+    <!-- Terminal Popup -->
+    <string name="action_select_url">选择 URL</string>
+    <string name="title_select_url_dialog">点击 URL 以复制，长按以打开</string>
+    <string name="title_select_url_none_found">终端中未找到 URL。</string>
+    <string name="msg_select_url_copied_to_clipboard">URL 已复制到剪贴板</string>
+
+    <string name="action_share_transcript">分享终端记录</string>
+    <string name="title_share_transcript">终端记录</string>
+    <string name="title_share_transcript_with">发送终端记录到：</string>
+
+    <string name="action_share_selected_text">分享所选文本</string>
+    <string name="title_share_selected_text">终端文本</string>
+    <string name="title_share_selected_text_with">发送所选文本到：</string>
+
+    <string name="action_autofill_username">自动填充用户名</string>
+    <string name="action_autofill_password">自动填充密码</string>
+
+    <string name="action_reset_terminal">重置</string>
+    <string name="msg_terminal_reset">终端已重置</string>
+
+    <string name="action_kill_process">结束进程 (%d)</string>
+    <string name="title_confirm_kill_process">确定结束此会话吗？</string>
+
+    <string name="action_style_terminal">样式</string>
+    <string name="action_toggle_keep_screen_on">保持屏幕常亮</string>
+    <string name="action_open_help">帮助</string>
+    <string name="action_open_settings">设置</string>
+
+    <string name="action_report_issue">报告问题</string>
+    <string name="msg_generating_report">正在生成报告</string>
+    <string name="msg_add_termux_debug_info">是否将 termux 调试信息添加到报告中？</string>
+
+    <string name="error_styling_not_installed">未安装 &TERMUX_STYLING_APP_NAME; 插件应用。</string>
+    <string name="action_styling_install">安装</string>
+
+
+
+    <!-- Termux Notifications -->
+    <string name="notification_action_exit">退出</string>
+    <string name="notification_action_wake_lock">获取唤醒锁</string>
+    <string name="notification_action_wake_unlock">释放唤醒锁</string>
+
+
+
+    <!-- TermuxService -->
+    <string name="error_display_over_other_apps_permission_not_granted_to_start_terminal">&TERMUX_APP_NAME; 需要
+        "显示在其他应用上层" 权限，才能在 Android >= 10 上从后台启动终端会话。
+        请在 设置 -> 应用 -> &TERMUX_APP_NAME; -> 高级 中授予该权限</string>
+    <string name="error_termux_service_invalid_execution_command_runner">传递给 TermuxService 的执行命令运行器无效：`%1$s`</string>
+    <string name="error_termux_service_unsupported_execution_command_runner">传递给 TermuxService 的执行命令运行器不受支持：`%1$s`</string>
+    <string name="error_termux_service_unsupported_execution_command_shell_create_mode">传递给 TermuxService 的执行命令 shell 创建模式不受支持：`%1$s`</string>
+    <string name="error_termux_service_execution_command_shell_name_unset">未设置 shell 名称，但传入了 `%1$s` shell 创建模式</string>
+
+
+
+    <!-- Termux RunCommandService -->
+    <string name="error_run_command_service_invalid_intent_action">传递给 RunCommandService 的 intent action 无效：`%1$s`</string>
+    <string name="error_run_command_service_invalid_execution_command_runner">传递给 RunCommandService 的执行命令运行器无效：`%1$s`</string>
+    <string name="error_run_command_service_mandatory_extra_missing">RunCommandService 缺少必需 extra："%1$s"</string>
+    <string name="error_run_command_service_api_help">访问 %1$s 了解 RUN_COMMAND Intent 用法的更多信息。</string>
+
+
+
+    <!-- Termux File Receiver -->
+    <string name="title_file_received">将文件保存到 ~/downloads/</string>
+    <string name="action_file_received_edit">编辑</string>
+    <string name="action_file_received_open_directory">打开目录</string>
+
+
+
+    <!-- Miscellaneous -->
+    <string name="error_termux_service_start_failed_general">启动 TermuxService 失败。请检查 logcat 中的异常信息。</string>
+    <string name="error_termux_service_start_failed_bg">应用处于后台时，由于 Android 后台限制，启动 TermuxService 失败。</string>
+
+
+
+    <!-- Termux Settings -->
+    <string name="title_activity_termux_settings">&TERMUX_APP_NAME; 设置</string>
+
+    <!-- Termux App Preferences -->
+    <string name="termux_preferences_title">&TERMUX_APP_NAME;</string>
+    <string name="termux_preferences_summary">&TERMUX_APP_NAME; 应用的首选项</string>
+
+        <!-- Debugging Preferences -->
+        <string name="termux_debugging_preferences_title">调试</string>
+        <string name="termux_debugging_preferences_summary">调试相关首选项</string>
+
+            <!-- Logging Category -->
+            <string name="termux_logging_header">日志</string>
+
+                <!-- Log Level -->
+                <string name="termux_log_level_title">日志级别</string>
+
+                <!-- Terminal View Key Logging -->
+                <string name="termux_terminal_view_key_logging_enabled_title">终端视图按键日志</string>
+                <string name="termux_terminal_view_key_logging_enabled_off">日志中不会记录终端视图按键。（默认）</string>
+                <string name="termux_terminal_view_key_logging_enabled_on">Logcat 日志将记录终端视图按键信息。
+                    这些日志非常冗长，正常情况下应禁用，否则会导致性能问题。</string>
+
+                <!-- Plugin Error Notifications -->
+                <string name="termux_plugin_error_notifications_enabled_title">插件错误通知</string>
+                <string name="termux_plugin_error_notifications_enabled_off">禁用插件错误的闪现和通知。</string>
+                <string name="termux_plugin_error_notifications_enabled_on">显示插件错误的闪现和通知。（默认）</string>
+
+                <!-- Crash Report Notifications -->
+                <string name="termux_crash_report_notifications_enabled_title">崩溃报告通知</string>
+                <string name="termux_crash_report_notifications_enabled_off">禁用崩溃报告通知。</string>
+                <string name="termux_crash_report_notifications_enabled_on">显示崩溃报告通知。（默认）</string>
+
+
+        <!-- Terminal IO Preferences -->
+        <string name="termux_terminal_io_preferences_title">终端 I/O</string>
+        <string name="termux_terminal_io_preferences_summary">终端 I/O 相关首选项</string>
+
+            <!-- Keyboard Category -->
+            <string name="termux_keyboard_header">键盘</string>
+
+                <!-- Soft Keyboard -->
+                <string name="termux_soft_keyboard_enabled_title">启用软键盘</string>
+                <string name="termux_soft_keyboard_enabled_off">软键盘将被禁用。</string>
+                <string name="termux_soft_keyboard_enabled_on">软键盘将被启用。（默认）</string>
+
+                <!-- Soft Keyboard Only If No Hardware-->
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_title">仅在无硬件键盘时启用软键盘</string>
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_off">即使连接了硬件键盘，
+                    也会启用软键盘。（默认）</string>
+                <string name="termux_soft_keyboard_enabled_only_if_no_hardware_on">仅在未连接硬件键盘时
+                    启用软键盘。</string>
+
+
+        <!-- Terminal View Preferences -->
+        <string name="termux_terminal_view_preferences_title">终端视图</string>
+        <string name="termux_terminal_view_preferences_summary">终端视图相关首选项</string>
+
+            <!-- View Category -->
+            <string name="termux_terminal_view_view_header">视图</string>
+
+                <!-- Terminal View Margin Adjustment -->
+                <string name="termux_terminal_view_terminal_margin_adjustment_title">终端边距调整</string>
+                <string name="termux_terminal_view_terminal_margin_adjustment_off">终端边距调整将被禁用。</string>
+                <string name="termux_terminal_view_terminal_margin_adjustment_on">终端边距调整将被启用。
+                    建议启用以尝试修复软键盘遮挡额外按键/终端视图部分内容的问题。
+                    如果在你的设备上造成屏幕闪烁，请禁用它。（默认）</string>
+
+
+
+    <!-- Termux:API App Preferences -->
+    <string name="termux_api_preferences_title">&TERMUX_API_APP_NAME;</string>
+    <string name="termux_api_preferences_summary">&TERMUX_API_APP_NAME; 应用的首选项</string>
+
+
+
+    <!-- Termux:Float App Preferences -->
+    <string name="termux_float_preferences_title">&TERMUX_FLOAT_APP_NAME;</string>
+    <string name="termux_float_preferences_summary">&TERMUX_FLOAT_APP_NAME; 应用的首选项</string>
+
+
+
+    <!-- Termux:Tasker App Preferences -->
+    <string name="termux_tasker_preferences_title">&TERMUX_TASKER_APP_NAME;</string>
+    <string name="termux_tasker_preferences_summary">&TERMUX_TASKER_APP_NAME; 应用的首选项</string>
+
+
+
+    <!-- Termux:Widget App Preferences -->
+    <string name="termux_widget_preferences_title">&TERMUX_WIDGET_APP_NAME;</string>
+    <string name="termux_widget_preferences_summary">&TERMUX_WIDGET_APP_NAME; 应用的首选项</string>
+
+
+
+    <!-- About Preference -->
+    <string name="about_preference_title">关于</string>
+
+    <!-- Donate Preference -->
+    <string name="donate_preference_title">捐赠</string>
+
+    <!-- BotDrop UI -->
+    <string name="botdrop_update_available">有可用更新</string>
+    <string name="botdrop_download">下载</string>
+    <string name="botdrop_dismiss">忽略</string>
+    <string name="botdrop_back">返回</string>
+    <string name="botdrop_gateway_stopped">网关已停止</string>
+    <string name="botdrop_check_openclaw_updates">检查 OpenClaw 更新</string>
+    <string name="botdrop_view_log">查看日志</string>
+    <string name="botdrop_open_web_ui">打开 Web UI</string>
+    <string name="botdrop_first_interaction_tip">首次交互时，代理预热可能需要 2-3 分钟。</string>
+    <string name="botdrop_gateway_issue_detected">检测到网关问题</string>
+    <string name="botdrop_channels">频道</string>
+    <string name="botdrop_channel_telegram">📱 Telegram</string>
+    <string name="botdrop_connected">● 已连接</string>
+    <string name="botdrop_channel_discord">💬 Discord</string>
+    <string name="botdrop_channel_feishu">📨 飞书</string>
+    <string name="botdrop_current_model">当前模型</string>
+    <string name="botdrop_change_model">更换模型</string>
+    <string name="botdrop_start">▶ 启动</string>
+    <string name="botdrop_stop">⏹ 停止</string>
+    <string name="botdrop_restart">🔄 重启</string>
+    <string name="botdrop_backup">备份</string>
+    <string name="botdrop_restore">恢复</string>
+    <string name="botdrop_tip">💡 提示</string>
+    <string name="botdrop_chat_tip">在你已连接的频道中与 BotDrop 对话，可配置更多设置、添加频道或更换模型。</string>
+    <string name="botdrop_ssh_access">SSH 访问</string>
+    <string name="botdrop_open_terminal">🖥 打开终端</string>
+    <string name="botdrop_welcome">欢迎使用 BotDrop</string>
+    <string name="botdrop_permissions_intro">BotDrop 需要两个权限，才能在后台稳定运行你的 AI 网关。</string>
+    <string name="botdrop_notifications">通知</string>
+    <string name="botdrop_notifications_hint">显示网关状态和提醒</string>
+    <string name="botdrop_allow">允许</string>
+    <string name="botdrop_background_running">后台运行</string>
+    <string name="botdrop_background_running_hint">在应用后台时保持网关运行</string>
+    <string name="botdrop_advanced_background_settings">高级后台设置</string>
+    <string name="botdrop_advanced_background_hint">建议：将电池设置为“不受限制”，并允许后台数据（部分设备默认会限制）。</string>
+    <string name="botdrop_open">打开</string>
+    <string name="botdrop_continue">继续</string>
+    <string name="botdrop_check_update">检查更新</string>
+    <string name="botdrop_checking_installation">正在检查安装状态...</string>
+    <string name="botdrop_terminal">🖥 终端</string>
+    <string name="botdrop_next">下一步</string>
+    <string name="botdrop_set_provider_credentials">设置提供商凭据</string>
+    <string name="botdrop_close">关闭</string>
+    <string name="botdrop_provider_id">提供商 ID</string>
+    <string name="botdrop_provider_id_hint">例如：moonshot</string>
+    <string name="botdrop_custom_base_url">自定义基础 URL</string>
+    <string name="botdrop_custom_base_url_hint">https://api.example.com/v1</string>
+    <string name="botdrop_enter_api_key">输入 API Key</string>
+    <string name="botdrop_saved_keys">已保存的密钥</string>
+    <string name="botdrop_cancel">取消</string>
+    <string name="botdrop_select_model">选择模型</string>
+    <string name="botdrop_step_1">第 1 步</string>
+    <string name="botdrop_search">搜索</string>
+    <string name="botdrop_search_models">搜索模型...</string>
+    <string name="botdrop_loading_models">正在加载模型...</string>
+    <string name="botdrop_retry">重试</string>
+    <string name="botdrop_openclaw_gateway_log">OpenClaw 网关日志</string>
+    <string name="botdrop_copy">复制</string>
+    <string name="botdrop_stopping_gateway">正在停止网关</string>
+    <string name="botdrop_installing_update">正在安装更新</string>
+    <string name="botdrop_finalizing">正在完成</string>
+    <string name="botdrop_starting_gateway">正在启动网关</string>
+    <string name="botdrop_refreshing_model_list">正在刷新模型列表</string>
+    <string name="botdrop_may_take_a_few_minutes">这可能需要几分钟</string>
+    <string name="botdrop_choose_agent">选择你的代理</string>
+    <string name="botdrop_openclaw">OpenClaw</string>
+    <string name="botdrop_openclaw_desc">真正能执行任务的 AI。</string>
+    <string name="botdrop_openclaw_site">openclaw.ai</string>
+    <string name="botdrop_install">安装</string>
+    <string name="botdrop_versions">版本</string>
+    <string name="botdrop_openclaw_version_manager">OpenClaw 版本管理器</string>
+    <string name="botdrop_owliabot">OwliaBot</string>
+    <string name="botdrop_owliabot_desc">更轻量、更安全、原生加密生态的 OpenClaw。</string>
+    <string name="botdrop_owliabot_site">owlia.bot</string>
+    <string name="botdrop_soon">即将推出</string>
+    <string name="botdrop_step_2_4_with_back">← 第 2/4 步</string>
+    <string name="botdrop_choose_your_ai">选择你的 AI</string>
+    <string name="botdrop_select_ai_model_desc">选择一个 AI 模型来驱动你的机器人</string>
+    <string name="botdrop_ai_model">AI 模型</string>
+    <string name="botdrop_no_model_selected">未选择模型</string>
+    <string name="botdrop_select">选择</string>
+    <string name="botdrop_api_key">API Key</string>
+    <string name="botdrop_paste_api_key_here">在此粘贴你的 API Key</string>
+    <string name="botdrop_toggle_visibility">切换可见性</string>
+    <string name="botdrop_custom_base_url_example">例如 https://api.example.com/v1</string>
+    <string name="botdrop_verify_continue">验证并继续</string>
+    <string name="botdrop_back_arrow">← 返回</string>
+    <string name="botdrop_provider_auth">提供商认证</string>
+    <string name="botdrop_paste_key_here">在此粘贴你的密钥</string>
+    <string name="botdrop_open_browser_signin">打开浏览器登录</string>
+    <string name="botdrop_step_3_4">第 3/4 步</string>
+    <string name="botdrop_connect_im_channels">连接 IM 频道</string>
+    <string name="botdrop_discord_intro">在 Discord 开发者门户创建机器人，然后在下方粘贴机器人令牌。</string>
+    <string name="botdrop_discord_steps">必需步骤：1) 创建机器人并复制令牌；2) 将机器人添加到你的服务器（guild）；3) 将机器人添加到至少一个频道。</string>
+    <string name="botdrop_bot_token">机器人令牌</string>
+    <string name="botdrop_bot_token_hint">机器人令牌</string>
+    <string name="botdrop_guild_id">Guild ID</string>
+    <string name="botdrop_channel_id">频道 ID</string>
+    <string name="botdrop_owner_id">所有者 ID</string>
+    <string name="botdrop_open_discord_developers">打开 Discord Developers</string>
+    <string name="botdrop_connect_start">连接并启动</string>
+    <string name="botdrop_skip_for_now">暂时跳过</string>
+    <string name="botdrop_feishu_intro">创建飞书应用和机器人，然后在下方填写 App ID 和 App Secret。详情请查看设置指南。</string>
+    <string name="botdrop_app_id">App ID</string>
+    <string name="botdrop_app_secret">App Secret</string>
+    <string name="botdrop_feishu_user_id_next_step">飞书用户 ID（用于下一步）</string>
+    <string name="botdrop_feishu_user_id_hint">ou_xxx...</string>
+    <string name="botdrop_feishu_steps">第 1 步：仅填写 App ID + App Secret 并保存。\n第 2 步：给机器人发消息获取你的用户 ID（ou_...）。\n第 3 步：将用户 ID 粘贴到此处，保存并重启网关。</string>
+    <string name="botdrop_open_feishu_console">打开飞书控制台</string>
+    <string name="botdrop_open_setup_bot">打开 @BotDropSetupBot</string>
+    <string name="botdrop_ai_assistant_on_phone">你的 AI 助手，\n运行在你的手机上。</string>
+    <string name="botdrop_environment_ready">环境已就绪</string>
+    <string name="botdrop_verifying_nodejs">正在验证 Node.js</string>
+    <string name="botdrop_installing_openclaw">正在安装 OpenClaw</string>
+    <string name="botdrop_takes_about_a_minute">大约需要一分钟</string>
+    <string name="botdrop_continue_arrow">继续 →</string>
+    <string name="botdrop_model_badge">模型标识</string>
+    <string name="botdrop_provider_name">提供商名称</string>
+    <string name="botdrop_auth_method_hint">认证方式提示</string>
+    <string name="botdrop_select_provider_choose_model">选择提供商并选择模型</string>
+    <string name="botdrop_update_title">BotDrop 更新</string>
+    <string name="botdrop_new_version_detected">检测到新版本：v%1$s</string>
+    <string name="botdrop_new_version_detected_detail">检测到新版本：v%1$s\n\n点击查看详情</string>
+    <string name="botdrop_update_channel_name">BotDrop 更新通知</string>
+    <string name="botdrop_update_channel_description">当有新版本 BotDrop 可用时通知。</string>
+
+</resources>

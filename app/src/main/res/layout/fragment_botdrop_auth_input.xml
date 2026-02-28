@@ -16,7 +16,7 @@
             android:id="@+id/auth_input_back"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="← Back"
+            android:text="@string/botdrop_back_arrow"
             android:textSize="14sp"
             android:textColor="@color/botdrop_accent"
             android:clickable="true"
@@ -28,7 +28,7 @@
             android:id="@+id/auth_input_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Provider Auth"
+            android:text="@string/botdrop_provider_auth"
             android:textSize="24sp"
             android:textStyle="bold"
             android:textColor="@color/botdrop_on_background"
@@ -56,7 +56,7 @@
                 android:id="@+id/auth_input_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="API Key"
+                android:text="@string/botdrop_api_key"
                 android:textSize="14sp"
                 android:textStyle="bold"
                 android:textColor="@color/botdrop_on_background"
@@ -74,7 +74,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:hint="Paste your key here"
+                    android:hint="@string/botdrop_paste_key_here"
                     android:inputType="textPassword"
                     android:background="@android:color/transparent"
                     android:textColor="@color/botdrop_on_background"
@@ -88,7 +88,7 @@
                     android:layout_height="48dp"
                     android:src="@android:drawable/ic_menu_view"
                     android:background="?android:attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Toggle visibility" />
+                    android:contentDescription="@string/botdrop_toggle_visibility" />
 
             </LinearLayout>
 
@@ -99,7 +99,7 @@
             android:id="@+id/auth_input_oauth_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Open Browser to Sign In"
+            android:text="@string/botdrop_open_browser_signin"
             android:visibility="gone"
             android:layout_marginBottom="16dp"
             android:background="@drawable/botdrop_button_bg"
@@ -131,7 +131,7 @@
             android:id="@+id/auth_input_verify_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Verify &amp; Continue"
+            android:text="@string/botdrop_verify_continue"
             android:layout_marginTop="24dp"
             android:background="@drawable/botdrop_button_bg"
             android:textColor="#1A1A1A"

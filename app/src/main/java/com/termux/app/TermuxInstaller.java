@@ -23,6 +23,7 @@ import com.termux.shared.android.PackageUtils;
 import com.termux.shared.termux.TermuxConstants;
 import com.termux.shared.termux.TermuxUtils;
 import com.termux.shared.termux.shell.command.environment.TermuxShellEnvironment;
+import app.botdrop.OpenclawVersionUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -471,7 +472,8 @@ public final class TermuxInstaller {
                 "echo \"BOTDROP_STEP:1:DONE\"\n\n" +
                 "echo \"BOTDROP_STEP:2:START:Installing OpenClaw\"\n" +
                 "rm -rf $PREFIX/lib/node_modules/openclaw 2>/dev/null\n" +
-                "NPM_OUTPUT=$(npm install -g " + openclawVersion + " --ignore-scripts --force 2>&1)\n" +
+                "\n" +
+                "NPM_OUTPUT=$(" + OpenclawVersionUtils.buildNpmInstallCommand(openclawVersion) + " 2>&1)\n" +
                 "NPM_EXIT=$?\n" +
                 "if [ $NPM_EXIT -eq 0 ]; then\n" +
                 "    # Create a stable openclaw wrapper (npm-generated shim can be broken on Android/proot)\n" +

@@ -29,7 +29,7 @@
                 android:layout_height="40dp"
                 android:src="@android:drawable/ic_media_previous"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Back"
+                android:contentDescription="@string/botdrop_back"
                 android:tint="@color/botdrop_accent"
                 android:visibility="gone" />
 
@@ -45,7 +45,7 @@
                     android:id="@+id/model_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Select Model"
+                    android:text="@string/botdrop_select_model"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@color/botdrop_on_background"
@@ -55,7 +55,7 @@
                     android:id="@+id/model_step_hint"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Step 1"
+                    android:text="@string/botdrop_step_1"
                     android:textSize="12sp"
                     android:textColor="@color/botdrop_secondary_text"
                     android:layout_marginTop="2dp" />
@@ -68,7 +68,7 @@
                 android:layout_height="40dp"
                 android:src="@android:drawable/ic_menu_close_clear_cancel"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Close"
+                android:contentDescription="@string/botdrop_close"
                 android:tint="@color/botdrop_on_background" />
 
         </LinearLayout>
@@ -102,7 +102,7 @@
                     android:layout_height="20dp"
                     android:src="@android:drawable/ic_menu_search"
                     android:tint="@color/botdrop_secondary_text"
-                    android:contentDescription="Search" />
+                    android:contentDescription="@string/botdrop_search" />
 
                 <EditText
                     android:id="@+id/model_search"
@@ -110,7 +110,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:layout_marginStart="10dp"
-                    android:hint="Search models..."
+                    android:hint="@string/botdrop_search_models"
                     android:textColor="@color/botdrop_on_background"
                     android:textColorHint="@color/botdrop_secondary_text"
                     android:background="@android:color/transparent"
@@ -136,7 +136,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:text="Loading models..."
+                android:text="@string/botdrop_loading_models"
                 android:textSize="14sp"
                 android:textColor="@color/botdrop_secondary_text"
                 android:gravity="center"
@@ -147,7 +147,7 @@
                 android:id="@+id/model_retry"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Retry"
+                android:text="@string/botdrop_retry"
                 android:layout_gravity="center"
                 android:visibility="gone"
                 android:background="@drawable/botdrop_button_bg"
