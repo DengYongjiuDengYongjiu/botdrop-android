@@ -29,11 +29,16 @@ public class BotDropService extends Service {
     private static final String BOTDROP_APT_SOURCES_LIST = TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/etc/apt/sources.list";
     private static final String BOTDROP_APT_SOURCES_LIST_D = TermuxConstants.TERMUX_PREFIX_DIR_PATH + "/etc/apt/sources.list.d";
     private static final String BOTDROP_APT_LIST_FILE = BOTDROP_APT_SOURCES_LIST_D + "/botdrop.list";
+    private static final long SHARP_INSTALL_RETRY_INTERVAL_MS = 10 * 60 * 1000L;
 
     private final IBinder mBinder = new LocalBinder();
     private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService mSharpInstallExecutor = Executors.newSingleThreadExecutor();
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private volatile boolean mUpdateInProgress = false;
+    private final java.util.concurrent.atomic.AtomicBoolean mSharpInstallInProgress =
+        new java.util.concurrent.atomic.AtomicBoolean(false);
+    private volatile long mLastSharpCheckAttemptMs = 0L;
 
     public class LocalBinder extends Binder {
         public BotDropService getService() {
@@ -64,6 +69,7 @@ public class BotDropService extends Service {
     public void onDestroy() {
         super.onDestroy();
         mExecutor.shutdown();
+        mSharpInstallExecutor.shutdown();
         Logger.logDebug(LOG_TAG, "onDestroy");
     }
 
@@ -633,8 +639,32 @@ public class BotDropService extends Service {
     }
 
     private CommandResult executeGatewayStart() {
-        ensureSharpInstalled();
+        scheduleSilentSharpInstallationCheck();
         return executeCommandSync(buildStartGatewayScript());
+    }
+
+    /**
+     * Schedule a background sharp installation check/install. This method must be fast and must not
+     * block gateway start/restart flows.
+     */
+    private void scheduleSilentSharpInstallationCheck() {
+        long now = System.currentTimeMillis();
+        long lastAttempt = mLastSharpCheckAttemptMs;
+        if (now - lastAttempt < SHARP_INSTALL_RETRY_INTERVAL_MS) {
+            return;
+        }
+        if (!mSharpInstallInProgress.compareAndSet(false, true)) {
+            return;
+        }
+
+        mLastSharpCheckAttemptMs = now;
+        mSharpInstallExecutor.execute(() -> {
+            try {
+                ensureSharpInstalled();
+            } finally {
+                mSharpInstallInProgress.set(false);
+            }
+        });
     }
 
     /**
