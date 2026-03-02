@@ -282,11 +282,11 @@ public class BotDropLauncherActivity extends Activity {
             mNotificationStatus.setText("✓");
             mNotificationStatus.setVisibility(View.VISIBLE);
             mNotificationButton.setEnabled(false);
-            mNotificationButton.setText("Enabled");
+            mNotificationButton.setText(R.string.botdrop_enabled);
         } else {
             mNotificationStatus.setVisibility(View.GONE);
             mNotificationButton.setEnabled(true);
-            mNotificationButton.setText("Allow");
+            mNotificationButton.setText(R.string.botdrop_allow);
         }
 
         // Battery status
@@ -294,21 +294,21 @@ public class BotDropLauncherActivity extends Activity {
             mBatteryStatus.setText("✓");
             mBatteryStatus.setVisibility(View.VISIBLE);
             mBatteryButton.setEnabled(false);
-            mBatteryButton.setText("Granted");
+            mBatteryButton.setText(R.string.botdrop_granted);
         } else {
             mBatteryStatus.setVisibility(View.GONE);
             mBatteryButton.setEnabled(true);
-            mBatteryButton.setText("Allow");
+            mBatteryButton.setText(R.string.botdrop_allow);
         }
 
         // Background hint status (informational)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             if (backgroundStatus == ConnectivityManager.RESTRICT_BACKGROUND_STATUS_ENABLED) {
-                mBackgroundHintText.setText("Background data is restricted. Enable Unrestricted data usage for BotDrop.");
+                mBackgroundHintText.setText(R.string.botdrop_background_data_restricted);
             } else if (backgroundStatus == ConnectivityManager.RESTRICT_BACKGROUND_STATUS_WHITELISTED) {
-                mBackgroundHintText.setText("Background data is allowed. If it still pauses, set Battery to Unrestricted.");
+                mBackgroundHintText.setText(R.string.botdrop_background_data_allowed);
             } else {
-                mBackgroundHintText.setText("If the bot pauses in background, set Battery to Unrestricted and allow Background data.");
+                mBackgroundHintText.setText(R.string.botdrop_background_data_hint);
             }
         }
 
@@ -318,17 +318,17 @@ public class BotDropLauncherActivity extends Activity {
 
     private void checkUpdateManually() {
         mCheckUpdateButton.setEnabled(false);
-        mCheckUpdateButton.setText("Checking...");
+        mCheckUpdateButton.setText(R.string.botdrop_checking_updates);
 
         UpdateChecker.forceCheckWithFeedback(this, (updateAvailable, latestVersion, downloadUrl, notes, message) -> {
             mCheckUpdateButton.setEnabled(true);
-            mCheckUpdateButton.setText("Check Update");
+            mCheckUpdateButton.setText(R.string.botdrop_check_update);
             if (message != null && !message.isEmpty()) {
                 Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
             } else if (updateAvailable) {
-                Toast.makeText(this, "Update available: v" + latestVersion, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.botdrop_update_available_version, latestVersion), Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "No updates available", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.botdrop_no_update_available), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -339,7 +339,7 @@ public class BotDropLauncherActivity extends Activity {
         // Check 1: Bootstrap installed?
         if (!BotDropService.isBootstrapInstalled()) {
             Logger.logInfo(LOG_TAG, "Bootstrap not ready, waiting for TermuxInstaller");
-            mStatusText.setText("Setting up environment...");
+            mStatusText.setText(R.string.botdrop_setting_up_environment);
 
             TermuxInstaller.setupBootstrapIfNeeded(this, this::checkAndRoute);
             return;
@@ -348,7 +348,7 @@ public class BotDropLauncherActivity extends Activity {
         // Check 2: OpenClaw installed?
         if (!BotDropService.isOpenclawInstalled()) {
             Logger.logInfo(LOG_TAG, "OpenClaw not installed, routing to agent selection");
-            mStatusText.setText("Setup required...");
+            mStatusText.setText(R.string.botdrop_setup_required);
 
             Intent intent = new Intent(this, SetupActivity.class);
             intent.putExtra(SetupActivity.EXTRA_START_STEP, SetupActivity.STEP_AGENT_SELECT);
@@ -360,7 +360,7 @@ public class BotDropLauncherActivity extends Activity {
         // Check 3: OpenClaw configured (API key)?
         if (!BotDropService.isOpenclawConfigured()) {
             Logger.logInfo(LOG_TAG, "OpenClaw not configured, routing to agent-first setup");
-            mStatusText.setText("Setup required...");
+            mStatusText.setText(R.string.botdrop_setup_required);
 
             Intent intent = new Intent(this, SetupActivity.class);
             intent.putExtra(SetupActivity.EXTRA_START_STEP, SetupActivity.STEP_AGENT_SELECT);
@@ -372,7 +372,7 @@ public class BotDropLauncherActivity extends Activity {
         // Check 4: Channel configured?
         if (!hasChannelConfigured()) {
             Logger.logInfo(LOG_TAG, "No channel configured, routing to channel setup");
-            mStatusText.setText("Channel setup required...");
+            mStatusText.setText(R.string.botdrop_channel_setup_required);
 
             Intent intent = new Intent(this, SetupActivity.class);
             intent.putExtra(SetupActivity.EXTRA_START_STEP, SetupActivity.STEP_CHANNEL);
@@ -383,7 +383,7 @@ public class BotDropLauncherActivity extends Activity {
 
         // All ready - go to DashboardActivity
         Logger.logInfo(LOG_TAG, "All ready, routing to dashboard");
-        mStatusText.setText("Starting...");
+        mStatusText.setText(R.string.botdrop_starting_status);
 
         Intent intent = new Intent(this, DashboardActivity.class);
         startActivity(intent);

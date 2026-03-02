@@ -188,7 +188,7 @@ public class AuthFragment extends Fragment implements SetupActivity.StepFragment
                 mCurrentCustomModels = null;
             }
             mStatusContainer.setVisibility(View.GONE);
-            mKeyLabel.setText("API Key");
+            mKeyLabel.setText(getString(R.string.botdrop_api_key));
 
             Logger.logInfo(LOG_TAG, "Model selected: " + fullModel);
         });
@@ -211,7 +211,7 @@ public class AuthFragment extends Fragment implements SetupActivity.StepFragment
         return new ProviderInfo(
             providerId,
             providerId,
-            "API Key",
+            getString(R.string.botdrop_api_key),
             Arrays.asList(ProviderInfo.AuthMethod.API_KEY),
             false
         );
@@ -260,7 +260,7 @@ public class AuthFragment extends Fragment implements SetupActivity.StepFragment
 
     private void verifyAndContinue() {
         if (mSelectedModel == null || mSelectedProvider == null) {
-            showStatus("Please select a model first.", false);
+            showStatus(getString(R.string.botdrop_select_model_first), false);
             return;
         }
 
@@ -270,28 +270,28 @@ public class AuthFragment extends Fragment implements SetupActivity.StepFragment
             baseUrl = mBaseUrlInput == null ? null : normalizeCustomBaseUrl(mBaseUrlInput.getText().toString());
             String selectedBaseUrl = normalizeCustomBaseUrl(mSelectedProviderBaseUrl);
             if (!TextUtils.equals(baseUrl, selectedBaseUrl)) {
-                showStatus("Base URL changed; please reselect the provider and model.", false);
+                showStatus(getString(R.string.botdrop_base_url_changed_reselect_provider_model), false);
                 return;
             }
 
             if (TextUtils.isEmpty(baseUrl)) {
-                showStatus("Please enter custom base URL", false);
+                showStatus(getString(R.string.botdrop_enter_custom_base_url), false);
                 return;
             }
         }
         if (TextUtils.isEmpty(credential)) {
-            showStatus("Please enter your api key", false);
+            showStatus(getString(R.string.botdrop_enter_api_key), false);
             return;
         }
 
         if (credential.length() < 8) {
-            showStatus("Invalid format. Please check and try again.", false);
+            showStatus(getString(R.string.botdrop_invalid_api_key_format), false);
             return;
         }
 
         mVerifyButton.setEnabled(false);
-        mVerifyButton.setText("Verifying...");
-        showStatus("Verifying credentials...", true);
+        mVerifyButton.setText(getString(R.string.botdrop_verifying));
+        showStatus(getString(R.string.botdrop_verifying_credentials), true);
 
         saveCredentials(credential, baseUrl);
     }
@@ -311,7 +311,7 @@ public class AuthFragment extends Fragment implements SetupActivity.StepFragment
         Logger.logInfo(LOG_TAG, "Saving credentials for provider: " + providerId + ", model: " + modelToUse);
         String fullModel = providerId + "/" + modelToUse;
         if (isCustomProvider && (mCurrentCustomModels == null || mCurrentCustomModels.isEmpty())) {
-            showStatus("No custom model list found. Please reselect the provider and model.", false);
+            showStatus(getString(R.string.botdrop_no_custom_model_list_reselect), false);
             return;
         }
 
@@ -327,7 +327,7 @@ public class AuthFragment extends Fragment implements SetupActivity.StepFragment
                 ModelSelectorDialog.cacheProviderApiKey(requireContext(), providerId, credential);
             }
 
-            showStatus("✓ Connected!\nModel: " + fullModel, true);
+            showStatus(getString(R.string.botdrop_connected_with_model, fullModel), true);
 
             ConfigTemplate template = new ConfigTemplate();
             template.provider = providerId;
@@ -352,7 +352,7 @@ public class AuthFragment extends Fragment implements SetupActivity.StepFragment
             };
             mVerifyButton.postDelayed(mNavigationRunnable, 800);
         } else {
-            showStatus("Failed to write config. Check app permissions.", false);
+            showStatus(getString(R.string.botdrop_error_write_config), false);
             resetVerifyButton();
         }
     }
@@ -379,6 +379,6 @@ public class AuthFragment extends Fragment implements SetupActivity.StepFragment
 
     private void resetVerifyButton() {
         mVerifyButton.setEnabled(true);
-        mVerifyButton.setText("Verify & Continue");
+        mVerifyButton.setText(getString(R.string.botdrop_verify_continue));
     }
 }

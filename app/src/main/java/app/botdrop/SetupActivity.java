@@ -155,13 +155,13 @@ public class SetupActivity extends AppCompatActivity {
                 v.setEnabled(true);
                 if (version != null && !version.isEmpty()) {
                     new AlertDialog.Builder(this)
-                        .setTitle("Update available")
-                        .setMessage("A new version is available: v" + version + "\n\nGo to update page?")
-                        .setPositiveButton("Open", (d, w) -> openBotdropUpdatePage())
-                        .setNegativeButton("Cancel", null)
-                        .show();
+                .setTitle(getString(R.string.botdrop_update_update_available))
+                .setMessage(getString(R.string.botdrop_update_update_message, version))
+                .setPositiveButton(getString(R.string.botdrop_open_browser), (d, w) -> openBotdropUpdatePage())
+                .setNegativeButton(getString(R.string.botdrop_cancel), null)
+                .show();
                 } else {
-                    Toast.makeText(this, "No update available", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.botdrop_no_update_available), Toast.LENGTH_SHORT).show();
                 }
             });
         });
@@ -175,7 +175,7 @@ public class SetupActivity extends AppCompatActivity {
             Intent browserIntent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(BOTDROP_UPDATE_URL));
             startActivity(browserIntent);
         } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, "No browser app found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.botdrop_no_browser_app_found), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -212,27 +212,24 @@ public class SetupActivity extends AppCompatActivity {
         int current = mViewPager.getCurrentItem();
         if (current == STEP_INSTALL) {
             if (!canReadOpenclawBackupDirectoryForScan()) {
-                Toast.makeText(
-                    this,
-                    "Cannot check for OpenClaw backup because storage permission is not granted. You can restore manually after installation.",
-                    Toast.LENGTH_SHORT
-                ).show();
-                continueToNextStep(current);
-                return;
-            }
+            Toast.makeText(this, getString(R.string.botdrop_backup_permission_denied_with_manual_restore), Toast.LENGTH_SHORT).show();
+            continueToNextStep(current);
+            return;
+        }
 
             File latestBackup = getLatestOpenclawBackupFile();
             if (latestBackup == null || !latestBackup.exists()) {
                 Toast.makeText(
                     this,
-                    "No OpenClaw backup found in: "
-                        + getOpenclawBackupDirectory().getAbsolutePath()
-                        + ". Continue with a fresh setup.",
+                    getString(
+                        R.string.botdrop_no_openclaw_backup_found,
+                        getOpenclawBackupDirectory().getAbsolutePath()
+                    ),
                     Toast.LENGTH_SHORT
                 ).show();
-                continueToNextStep(current);
-                return;
-            }
+            continueToNextStep(current);
+            return;
+        }
 
             showOpenclawRestoreDialog(() -> continueToNextStep(current), latestBackup);
             return;
@@ -254,16 +251,15 @@ public class SetupActivity extends AppCompatActivity {
 
     private void showOpenclawRestoreDialog(@NonNull Runnable continueWithoutRestore, @NonNull File backupFile) {
         new AlertDialog.Builder(this)
-            .setTitle("Restore OpenClaw data before setup?")
-            .setMessage("A saved OpenClaw backup was found. Restore will replace current .openclaw folder, then jump to Dashboard. "
-                + "Choose Start from scratch to continue normal setup.")
-            .setPositiveButton("Restore data", (dialog, which) -> {
+            .setTitle(getString(R.string.botdrop_restore_openclaw_setup_title))
+            .setMessage(getString(R.string.botdrop_restore_openclaw_setup_message))
+            .setPositiveButton(getString(R.string.botdrop_restore_data_button), (dialog, which) -> {
                 runWithOpenclawStoragePermission(
                     () -> restoreOpenclawConfigAndContinue(backupFile, continueWithoutRestore),
                     continueWithoutRestore
                 );
             })
-            .setNegativeButton("Start from scratch", (dialog, which) -> continueWithoutRestore.run())
+            .setNegativeButton(getString(R.string.botdrop_start_from_scratch), (dialog, which) -> continueWithoutRestore.run())
             .setCancelable(false)
             .show();
     }
@@ -273,12 +269,12 @@ public class SetupActivity extends AppCompatActivity {
             boolean restored = restoreOpenclawBackupFile(backupFile);
             runOnUiThread(() -> {
                 if (!restored) {
-                    Toast.makeText(this, "Failed to restore OpenClaw data", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, getString(R.string.botdrop_failed_openclaw_backup_restore), Toast.LENGTH_SHORT).show();
                     continueWithoutRestore.run();
                     return;
                 }
 
-                Toast.makeText(this, "OpenClaw data restored", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.botdrop_openclaw_data_restored), Toast.LENGTH_SHORT).show();
                 ConfigTemplateCache.clearTemplate(this);
                 Intent intent = new Intent(this, DashboardActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

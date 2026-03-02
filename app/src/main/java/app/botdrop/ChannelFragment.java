@@ -21,10 +21,10 @@ import com.termux.shared.logger.Logger;
 public class ChannelFragment extends Fragment {
 
     private static final String LOG_TAG = "ChannelFragment";
-    private static final String[] TAB_TITLES = {
-        "Telegram",
-        "Discord",
-        "Feishu"
+    private static final int[] TAB_TITLE_IDS = {
+        R.string.botdrop_platform_telegram,
+        R.string.botdrop_platform_discord,
+        R.string.botdrop_platform_feishu
     };
 
     private TabLayout mChannelTabs;
@@ -56,8 +56,8 @@ public class ChannelFragment extends Fragment {
         mChannelPager.setOffscreenPageLimit(1);
 
         new TabLayoutMediator(mChannelTabs, mChannelPager, (tab, position) -> {
-            String title = (position >= 0 && position < TAB_TITLES.length)
-                ? TAB_TITLES[position]
+            String title = (position >= 0 && position < TAB_TITLE_IDS.length)
+                ? getString(TAB_TITLE_IDS[position])
                 : String.valueOf(position + 1);
             tab.setText(title);
         }).attach();

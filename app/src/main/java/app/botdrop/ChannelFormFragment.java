@@ -8,6 +8,7 @@ import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -117,16 +118,24 @@ public abstract class ChannelFormFragment extends Fragment {
 
         if (mMeta != null) {
             if (mTokenLabel != null) {
-                mTokenLabel.setText(mMeta.tokenLabel);
+                mTokenLabel.setText(
+                    mMeta.tokenLabelRes != 0 ? mMeta.tokenLabelRes : R.string.botdrop_bot_token
+                );
             }
             if (mTokenInput != null) {
-                mTokenInput.setHint(mMeta.tokenHint);
+                mTokenInput.setHint(
+                    mMeta.tokenHintRes != 0 ? mMeta.tokenHintRes : R.string.botdrop_bot_token_hint
+                );
             }
             if (mOwnerLabel != null) {
-                mOwnerLabel.setText(mMeta.ownerLabel);
+                mOwnerLabel.setText(
+                    mMeta.ownerLabelRes != 0 ? mMeta.ownerLabelRes : R.string.botdrop_owner_id
+                );
             }
             if (mOwnerInput != null) {
-                mOwnerInput.setHint(mMeta.ownerHint);
+                mOwnerInput.setHint(
+                    mMeta.ownerHintRes != 0 ? mMeta.ownerHintRes : R.string.botdrop_owner_id_hint
+                );
             }
             if (mOwnerRow != null) {
                 mOwnerRow.setVisibility(mMeta.showOwnerField ? View.VISIBLE : View.GONE);
@@ -137,16 +146,17 @@ public abstract class ChannelFormFragment extends Fragment {
                 );
             }
             if (mFeishuUserIdLabel != null) {
-                mFeishuUserIdLabel.setText("Feishu User ID (for the next step)");
+                mFeishuUserIdLabel.setText(R.string.botdrop_feishu_user_id_next_step);
             }
             if (mFeishuUserIdInput != null) {
-                mFeishuUserIdInput.setHint("ou_xxx...");
+                mFeishuUserIdInput.setHint(R.string.botdrop_feishu_user_id_hint);
             }
             if (mFeishuUserIdHelp != null) {
                 mFeishuUserIdHelp.setText(
-                    "Step 1: Tap Connect & Start with only App ID + App Secret.\n"
-                        + "Step 2: Message the setup bot after connect to get your User ID.\n"
-                        + "Step 3: Paste the user id here, then tap Connect & Start again."
+                    Html.fromHtml(
+                        getString(R.string.botdrop_feishu_setup_steps),
+                        Html.FROM_HTML_MODE_COMPACT
+                    )
                 );
             }
             if (mDiscordGuildRow != null) {
@@ -155,13 +165,15 @@ public abstract class ChannelFormFragment extends Fragment {
                 );
             }
             if (mDiscordGuildLabel != null) {
-                mDiscordGuildLabel.setText("Discord Guild ID");
+                mDiscordGuildLabel.setText(R.string.botdrop_guild_id);
             }
             if (mDiscordGuildInput != null) {
-                mDiscordGuildInput.setHint("Your guild ID");
+                mDiscordGuildInput.setHint(R.string.botdrop_guild_id);
             }
-            if (mSetupHelpText != null && mMeta.setupHelpText != null) {
-                mSetupHelpText.setText(android.text.Html.fromHtml(mMeta.setupHelpText, android.text.Html.FROM_HTML_MODE_COMPACT));
+            if (mSetupHelpText != null && mMeta.setupHelpTextRes != 0) {
+                mSetupHelpText.setText(
+                    Html.fromHtml(getString(mMeta.setupHelpTextRes), Html.FROM_HTML_MODE_COMPACT)
+                );
                 mSetupHelpText.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
             }
         }
@@ -228,33 +240,33 @@ public abstract class ChannelFormFragment extends Fragment {
 
         if (!mMeta.isTokenValid(token)) {
             if (ChannelConfigMeta.PLATFORM_TELEGRAM.equals(mMeta.platform)) {
-                showError("Please enter a valid bot token");
+                showError(getString(R.string.botdrop_error_enter_valid_bot_token));
             } else if (ChannelConfigMeta.PLATFORM_FEISHU.equals(mMeta.platform)) {
-                showError("Please enter your App ID");
+                showError(getString(R.string.botdrop_error_enter_app_id));
             } else {
-                showError("Please enter your token");
+                showError(getString(R.string.botdrop_error_enter_token));
             }
             return;
         }
 
         if (!mMeta.isOwnerValid(ownerId)) {
             if (ChannelConfigMeta.PLATFORM_FEISHU.equals(mMeta.platform)) {
-                showError("Please enter a valid App Secret");
+                showError(getString(R.string.botdrop_error_enter_app_secret));
             } else {
-                showError("Please enter a valid owner ID");
+                showError(getString(R.string.botdrop_error_enter_owner_id));
             }
             return;
         }
 
         if (ChannelConfigMeta.PLATFORM_DISCORD.equals(mMeta.platform)) {
             if (!mMeta.isDiscordGuildIdValid(guildId)) {
-                showError("Please enter a valid guild ID");
+                showError(getString(R.string.botdrop_error_enter_guild_id));
                 return;
             }
         }
 
         mConnectButton.setEnabled(false);
-        mConnectButton.setText("Connecting...");
+        mConnectButton.setText(R.string.botdrop_connecting);
 
         boolean success;
         if (ChannelConfigMeta.PLATFORM_DISCORD.equals(mMeta.platform)) {
@@ -279,7 +291,7 @@ public abstract class ChannelFormFragment extends Fragment {
             );
         }
         if (!success) {
-            showError("Failed to write configuration");
+            showError(getString(R.string.botdrop_error_write_config));
             resetButton();
             return;
         }
@@ -455,7 +467,7 @@ public abstract class ChannelFormFragment extends Fragment {
         }
 
         if (mHasExistingConfig) {
-            mSkipButton.setText("Cancel");
+            mSkipButton.setText(R.string.botdrop_cancel);
             mSkipButton.setOnClickListener(v -> finishChannelSetup());
         } else {
             mSkipButton.setOnClickListener(v -> skipSetup());
@@ -464,7 +476,7 @@ public abstract class ChannelFormFragment extends Fragment {
 
     private void startGateway() {
         if (!mBound || mService == null) {
-            showError("Service not ready, please try again");
+            showError(getString(R.string.botdrop_service_not_ready));
             resetButton();
             return;
         }
@@ -485,11 +497,15 @@ public abstract class ChannelFormFragment extends Fragment {
                 }
 
                 if (result.success) {
-                    Logger.logInfo(LOG_TAG, "Gateway started successfully");
-                    Context ctx = getContext();
-                    if (ctx != null) {
-                        Toast.makeText(ctx, "Connected! Gateway is starting...", Toast.LENGTH_LONG).show();
-                    }
+                Logger.logInfo(LOG_TAG, "Gateway started successfully");
+                Context ctx = getContext();
+                if (ctx != null) {
+                    Toast.makeText(
+                        ctx,
+                        R.string.botdrop_connected_gateway_starting,
+                        Toast.LENGTH_LONG
+                    ).show();
+                }
 
                     SetupActivity setupActivity = (SetupActivity) getActivity();
                     if (setupActivity != null && !setupActivity.isFinishing()) {
@@ -502,9 +518,9 @@ public abstract class ChannelFormFragment extends Fragment {
                         errorMsg = result.stdout;
                     }
                     if (TextUtils.isEmpty(errorMsg)) {
-                        errorMsg = "Unknown error (exit code: " + result.exitCode + ")";
+                        errorMsg = getString(R.string.botdrop_unknown_error_exit_code, result.exitCode);
                     }
-                    showError("Failed to start gateway: " + errorMsg);
+                    showError(getString(R.string.botdrop_error_start_gateway, errorMsg));
                     resetButton();
                 }
             });
@@ -515,16 +531,15 @@ public abstract class ChannelFormFragment extends Fragment {
         if (!isAdded() || getActivity() == null || getActivity().isFinishing()) {
             return;
         }
-        String platformLabel = mMeta == null ? "This channel" : mMeta.title;
+        String platformLabel = mMeta == null ? getString(R.string.botdrop_this_channel) : getString(mMeta.titleRes);
         Context ctx = getContext();
         if (ctx == null) {
             return;
         }
         new AlertDialog.Builder(ctx)
-            .setTitle("Skip " + platformLabel + " setup?")
-            .setMessage("If you skip now, " + platformLabel + " will remain unconfigured. "
-                + "You can configure channels later from the OpenClaw Web UI.")
-            .setPositiveButton("Skip", (dialog, which) -> {
+            .setTitle(getString(R.string.botdrop_skip_channel_setup_title, platformLabel))
+            .setMessage(getString(R.string.botdrop_skip_channel_setup_message, platformLabel))
+            .setPositiveButton(R.string.botdrop_skip, (dialog, which) -> {
                 Logger.logInfo(LOG_TAG, "User skipped channel setup");
                 SetupActivity activity = (SetupActivity) getActivity();
                 if (activity == null || activity.isFinishing()) {
@@ -532,7 +547,7 @@ public abstract class ChannelFormFragment extends Fragment {
                 }
                 activity.goToNextStep();
             })
-            .setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss())
+            .setNegativeButton(R.string.botdrop_cancel, (dialog, which) -> dialog.dismiss())
             .show();
     }
 
@@ -550,7 +565,7 @@ public abstract class ChannelFormFragment extends Fragment {
 
     private void resetButton() {
         mConnectButton.setEnabled(true);
-        mConnectButton.setText("Connect & Start");
+        mConnectButton.setText(R.string.botdrop_connect_start);
     }
 
     protected abstract String getPlatformId();

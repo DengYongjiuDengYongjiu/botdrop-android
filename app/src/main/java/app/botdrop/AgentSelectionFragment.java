@@ -90,7 +90,7 @@ public class AgentSelectionFragment extends Fragment {
         Button installButton = view.findViewById(R.id.agent_openclaw_install);
         View versionManagerButton = view.findViewById(R.id.agent_openclaw_version_manager);
         final boolean isOpenclawInstalled = BotDropService.isOpenclawInstalled();
-        installButton.setText(isOpenclawInstalled ? "Open" : "Install");
+        installButton.setText(isOpenclawInstalled ? R.string.botdrop_open : R.string.botdrop_install);
         installButton.setOnClickListener(v -> {
             if (isOpenclawInstalled) {
                 Logger.logInfo(LOG_TAG, "OpenClaw already installed, opening dashboard");
@@ -168,9 +168,9 @@ public class AgentSelectionFragment extends Fragment {
 
         if (!mServiceBound || mBotDropService == null) {
             new AlertDialog.Builder(ctx)
-                .setTitle("OpenClaw Versions")
-                .setMessage("Service not connected. Please try again later.")
-                .setNegativeButton("Close", null)
+                .setTitle(R.string.botdrop_openclaw_versions)
+                .setMessage(R.string.botdrop_service_not_connected_try_later)
+                .setNegativeButton(R.string.botdrop_close, null)
                 .show();
             return;
         }
@@ -182,10 +182,10 @@ public class AgentSelectionFragment extends Fragment {
         mOpenclawVersionActionInProgress = true;
         final long requestId = ++mOpenclawVersionRequestId;
         mOpenclawVersionManagerDialog = new AlertDialog.Builder(ctx)
-            .setTitle("OpenClaw Versions")
-            .setMessage("Loading versions…")
+            .setTitle(R.string.botdrop_openclaw_versions)
+            .setMessage(R.string.botdrop_loading_versions)
             .setCancelable(false)
-            .setNegativeButton("Cancel", (d, w) -> {
+            .setNegativeButton(R.string.botdrop_cancel, (d, w) -> {
                 mOpenclawVersionActionInProgress = false;
                 if (requestId == mOpenclawVersionRequestId) {
                     ++mOpenclawVersionRequestId;
@@ -201,7 +201,9 @@ public class AgentSelectionFragment extends Fragment {
             }
             dismissOpenclawVersionManagerDialog();
             if (versions == null || versions.isEmpty()) {
-                showOpenclawVersionManagerError(TextUtils.isEmpty(errorMessage) ? "No versions available" : errorMessage);
+                showOpenclawVersionManagerError(TextUtils.isEmpty(errorMessage)
+                    ? getString(R.string.botdrop_no_versions_available)
+                    : errorMessage);
                 return;
             }
             showOpenclawVersions(versions);
@@ -223,10 +225,10 @@ public class AgentSelectionFragment extends Fragment {
             return;
         }
         mOpenclawVersionManagerDialog = new AlertDialog.Builder(ctx)
-            .setTitle("OpenClaw Versions")
+            .setTitle(R.string.botdrop_openclaw_versions)
             .setMessage(message)
-            .setNegativeButton("Close", (d, w) -> mOpenclawVersionActionInProgress = false)
-            .setPositiveButton("Retry", (d, w) -> showOpenclawVersionListDialog())
+            .setNegativeButton(R.string.botdrop_close, (d, w) -> mOpenclawVersionActionInProgress = false)
+            .setPositiveButton(R.string.botdrop_retry, (d, w) -> showOpenclawVersionListDialog())
             .setCancelable(false)
             .setOnDismissListener(d -> mOpenclawVersionActionInProgress = false)
             .show();
@@ -242,7 +244,7 @@ public class AgentSelectionFragment extends Fragment {
         List<String> normalized = OpenclawVersionUtils.normalizeVersionList(versions);
         if (normalized.isEmpty()) {
             mOpenclawVersionActionInProgress = false;
-            showOpenclawVersionManagerError("No valid versions found");
+            showOpenclawVersionManagerError(getString(R.string.botdrop_no_valid_versions_found));
             return;
         }
 
@@ -259,15 +261,15 @@ public class AgentSelectionFragment extends Fragment {
         for (int i = 0; i < normalized.size(); i++) {
             String v = normalized.get(i);
             if (!TextUtils.isEmpty(currentVersion) && TextUtils.equals(currentVersion, v)) {
-                labels[i] = OpenclawVersionUtils.VERSION_PREFIX + v + "  ← installed";
+                labels[i] = getString(R.string.botdrop_openclaw_version, v);
             } else {
-                labels[i] = OpenclawVersionUtils.VERSION_PREFIX + v;
+                labels[i] = getString(R.string.botdrop_openclaw_version, v);
             }
         }
 
         mOpenclawVersionActionInProgress = true;
         mOpenclawVersionManagerDialog = new AlertDialog.Builder(ctx)
-            .setTitle("OpenClaw Versions")
+            .setTitle(R.string.botdrop_openclaw_versions)
             .setItems(labels, (d, which) -> {
                 if (which < 0 || which >= finalNormalized.size()) {
                     mOpenclawVersionActionInProgress = false;
@@ -275,7 +277,7 @@ public class AgentSelectionFragment extends Fragment {
                 }
                 handleOpenclawVersionPick(finalNormalized.get(which));
             })
-            .setNegativeButton("Close", (d, w) -> mOpenclawVersionActionInProgress = false)
+            .setNegativeButton(R.string.botdrop_close, (d, w) -> mOpenclawVersionActionInProgress = false)
             .create();
         mOpenclawVersionManagerDialog.show();
     }
@@ -284,8 +286,8 @@ public class AgentSelectionFragment extends Fragment {
         String picked = OpenclawVersionUtils.normalizeForSort(version);
         if (TextUtils.isEmpty(picked)) {
             Context ctx = getContext();
-            if (ctx != null) {
-                Toast.makeText(ctx, "Invalid version format", Toast.LENGTH_SHORT).show();
+        if (ctx != null) {
+                Toast.makeText(ctx, getString(R.string.botdrop_invalid_version_format), Toast.LENGTH_SHORT).show();
             }
             mOpenclawVersionActionInProgress = false;
             return;
@@ -302,7 +304,7 @@ public class AgentSelectionFragment extends Fragment {
         if (TextUtils.isEmpty(installVersion)) {
             Context ctx = getContext();
             if (ctx != null) {
-                Toast.makeText(ctx, "Invalid install version", Toast.LENGTH_SHORT).show();
+                Toast.makeText(ctx, getString(R.string.botdrop_invalid_install_version), Toast.LENGTH_SHORT).show();
             }
             mOpenclawVersionActionInProgress = false;
             return;
@@ -316,20 +318,23 @@ public class AgentSelectionFragment extends Fragment {
 
         if (BotDropService.isOpenclawInstalled()) {
             new AlertDialog.Builder(ctx)
-                .setTitle("Install OpenClaw")
-                .setMessage("Installed: " + (TextUtils.isEmpty(currentVersion) ? "unknown" : "v" + currentVersion) + "\n\n"
-                    + "Install " + installVersion + "?")
-                .setNegativeButton("Cancel", (d, w) -> mOpenclawVersionActionInProgress = false)
-                .setPositiveButton("Install", (d, w) -> installOpenclawInPlace(installVersion))
+                .setTitle(R.string.botdrop_install)
+                .setMessage(getString(
+                    R.string.botdrop_install_openclaw_installed_title,
+                    TextUtils.isEmpty(currentVersion) ? getString(R.string.botdrop_unknown) : currentVersion,
+                    installVersion
+                ))
+                .setNegativeButton(R.string.botdrop_cancel, (d, w) -> mOpenclawVersionActionInProgress = false)
+                .setPositiveButton(R.string.botdrop_install, (d, w) -> installOpenclawInPlace(installVersion))
                 .setCancelable(false)
                 .setOnDismissListener(d -> mOpenclawVersionActionInProgress = false)
                 .show();
         } else {
             new AlertDialog.Builder(ctx)
-                .setTitle("Install OpenClaw")
-                .setMessage("OpenClaw is not installed. Install " + installVersion + "?")
-                .setNegativeButton("Cancel", (d, w) -> mOpenclawVersionActionInProgress = false)
-                .setPositiveButton("Install", (d, w) -> installOpenclawWithSetup(installVersion))
+                .setTitle(R.string.botdrop_install)
+                .setMessage(getString(R.string.botdrop_install_openclaw_not_installed_title, installVersion))
+                .setNegativeButton(R.string.botdrop_cancel, (d, w) -> mOpenclawVersionActionInProgress = false)
+                .setPositiveButton(R.string.botdrop_install, (d, w) -> installOpenclawWithSetup(installVersion))
                 .setCancelable(false)
                 .setOnDismissListener(d -> mOpenclawVersionActionInProgress = false)
                 .show();
@@ -360,18 +365,18 @@ public class AgentSelectionFragment extends Fragment {
         android.widget.TextView statusMessage = dialogView.findViewById(R.id.update_status_message);
 
         mProgressDialog = new AlertDialog.Builder(ctx)
-            .setTitle("Install OpenClaw")
+            .setTitle(R.string.botdrop_install)
             .setView(dialogView)
             .setCancelable(false)
             .create();
         mProgressDialog.show();
 
         final String[] stepMessages = {
-            "Stopping gateway...",
-            "Installing update...",
-            "Finalizing...",
-            "Starting gateway...",
-            "Refreshing model list...",
+            getString(R.string.botdrop_stopping_gateway) + "...",
+            getString(R.string.botdrop_installing_update) + "...",
+            getString(R.string.botdrop_finalizing) + "...",
+            getString(R.string.botdrop_starting_gateway) + "...",
+            getString(R.string.botdrop_refreshing_model_list) + "...",
         };
 
         mBotDropService.updateOpenclaw(installVersion, new BotDropService.UpdateProgressCallback() {
@@ -404,8 +409,8 @@ public class AgentSelectionFragment extends Fragment {
             @Override
             public void onError(String error) {
                 if (mProgressDialog != null && mProgressDialog.isShowing()) {
-                    statusMessage.setText("Install failed: " + error);
-                    mProgressDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Close",
+                    statusMessage.setText(getString(R.string.botdrop_install_failed, error));
+                    mProgressDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.botdrop_close),
                         (d, w) -> {
                             d.dismiss();
                             mProgressDialog = null;
@@ -421,7 +426,10 @@ public class AgentSelectionFragment extends Fragment {
                 for (android.widget.TextView icon : stepIcons) {
                     icon.setText("\u2713");
                 }
-                statusMessage.setText("Installed v" + version);
+                statusMessage.setText(getString(
+                    R.string.botdrop_installation_complete_with_version,
+                    TextUtils.isEmpty(version) ? getString(R.string.botdrop_unknown) : version
+                ));
 
                 if (getActivity() != null && isAdded()) {
                     getActivity().getWindow().getDecorView().postDelayed(() -> {
@@ -462,7 +470,10 @@ public class AgentSelectionFragment extends Fragment {
 
         if (mBotDropService == null || !mServiceBound) {
             String currentVersion = BotDropService.getOpenclawVersion();
-            cb.onResult(OpenclawVersionUtils.buildFallback(currentVersion), "Service not connected");
+            cb.onResult(
+                OpenclawVersionUtils.buildFallback(currentVersion),
+                getString(R.string.botdrop_service_not_connected)
+            );
             return;
         }
 
@@ -478,21 +489,27 @@ public class AgentSelectionFragment extends Fragment {
             if (result == null || !result.success) {
                 if (cachedVersions != null && !cachedVersions.isEmpty()) {
                     cb.onResult(cachedVersions,
-                        result == null ? "Failed to fetch versions, using cache" : "Failed to fetch versions (exit " + result.exitCode + "), using cache");
+                        result == null
+                            ? getString(R.string.botdrop_failed_to_fetch_versions)
+                            : getString(R.string.botdrop_failed_to_fetch_versions_exit, String.valueOf(result.exitCode))
+                    );
                     return;
                 }
                 cb.onResult(OpenclawVersionUtils.buildFallback(currentVersion),
-                    result == null ? "Failed to fetch versions" : "Failed to fetch versions (exit " + result.exitCode + ")");
+                    result == null
+                        ? getString(R.string.botdrop_failed_to_fetch_versions)
+                        : getString(R.string.botdrop_failed_to_fetch_versions_exit, String.valueOf(result.exitCode))
+                );
                 return;
             }
 
             List<String> versions = OpenclawVersionUtils.parseVersions(result.stdout);
             if (versions.isEmpty()) {
                 if (cachedVersions != null && !cachedVersions.isEmpty()) {
-                    cb.onResult(cachedVersions, "No versions found, using cache");
+                    cb.onResult(cachedVersions, getString(R.string.botdrop_no_versions_found));
                     return;
                 }
-                cb.onResult(OpenclawVersionUtils.buildFallback(currentVersion), "No versions found");
+                cb.onResult(OpenclawVersionUtils.buildFallback(currentVersion), getString(R.string.botdrop_no_versions_found));
                 return;
             }
 
@@ -578,27 +595,28 @@ public class AgentSelectionFragment extends Fragment {
 
         if (isPinned) {
             new AlertDialog.Builder(ctx)
-                .setTitle("OpenClaw Version")
-                .setMessage("Current install version: " + PINNED_VERSION + "\n\nReset to latest?")
-                .setPositiveButton("Reset to latest", (d, w) -> {
+                .setTitle(R.string.botdrop_openclaw_version_manager_title)
+                .setMessage(getString(R.string.botdrop_current_install_version, PINNED_VERSION) + "\n\n"
+                    + getString(R.string.botdrop_reset_to_latest) + "?")
+                .setPositiveButton(R.string.botdrop_reset_to_latest, (d, w) -> {
                     prefs.edit().remove(KEY_OPENCLAW_VERSION).apply();
                     TermuxInstaller.createBotDropScripts("openclaw@latest");
-                    Toast.makeText(ctx, "Reset to openclaw@latest", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ctx, getString(R.string.botdrop_set_to_latest, "openclaw@latest"), Toast.LENGTH_SHORT).show();
                     Logger.logInfo(LOG_TAG, "OpenClaw version reset to latest");
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.botdrop_cancel, null)
                 .show();
         } else {
             new AlertDialog.Builder(ctx)
-                .setTitle("OpenClaw Version")
-                .setMessage("Pin install version to " + PINNED_VERSION + "?")
-                .setPositiveButton("Pin", (d, w) -> {
+                .setTitle(R.string.botdrop_openclaw_version_manager_title)
+                .setMessage(getString(R.string.botdrop_pin_install_version, PINNED_VERSION))
+                .setPositiveButton(R.string.botdrop_pin, (d, w) -> {
                     prefs.edit().putString(KEY_OPENCLAW_VERSION, PINNED_VERSION).apply();
                     TermuxInstaller.createBotDropScripts(PINNED_VERSION);
-                    Toast.makeText(ctx, "Set to " + PINNED_VERSION, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ctx, getString(R.string.botdrop_set_to_latest, PINNED_VERSION), Toast.LENGTH_SHORT).show();
                     Logger.logInfo(LOG_TAG, "OpenClaw version pinned to " + PINNED_VERSION);
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.botdrop_cancel, null)
                 .show();
         }
     }

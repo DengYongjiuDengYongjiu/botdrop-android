@@ -1,5 +1,7 @@
 package app.botdrop;
 
+import com.termux.R;
+
 /**
  * Static metadata and validation rules for IM channel configuration pages.
  */
@@ -10,34 +12,34 @@ public class ChannelConfigMeta {
     public static final String PLATFORM_FEISHU = "feishu";
 
     public final String platform;
-    public final String title;
+    public final int titleRes;
     public final String setupBotUrl;
-    public final String tokenLabel;
-    public final String tokenHint;
-    public final String ownerLabel;
-    public final String ownerHint;
-    public final String setupHelpText;
+    public final int tokenLabelRes;
+    public final int tokenHintRes;
+    public final int ownerLabelRes;
+    public final int ownerHintRes;
+    public final int setupHelpTextRes;
     public final boolean showOwnerField;
 
     private ChannelConfigMeta(
         String platform,
-        String title,
+        int titleRes,
         String setupBotUrl,
-        String tokenLabel,
-        String tokenHint,
-        String ownerLabel,
-        String ownerHint,
-        String setupHelpText,
+        int tokenLabelRes,
+        int tokenHintRes,
+        int ownerLabelRes,
+        int ownerHintRes,
+        int setupHelpTextRes,
         boolean showOwnerField
     ) {
         this.platform = platform;
-        this.title = title;
+        this.titleRes = titleRes;
         this.setupBotUrl = setupBotUrl;
-        this.tokenLabel = tokenLabel;
-        this.tokenHint = tokenHint;
-        this.ownerLabel = ownerLabel;
-        this.ownerHint = ownerHint;
-        this.setupHelpText = setupHelpText;
+        this.tokenLabelRes = tokenLabelRes;
+        this.tokenHintRes = tokenHintRes;
+        this.ownerLabelRes = ownerLabelRes;
+        this.ownerHintRes = ownerHintRes;
+        this.setupHelpTextRes = setupHelpTextRes;
         this.showOwnerField = showOwnerField;
     }
 
@@ -54,13 +56,13 @@ public class ChannelConfigMeta {
     public static ChannelConfigMeta telegram() {
         return new ChannelConfigMeta(
             PLATFORM_TELEGRAM,
-            "Telegram",
+            R.string.botdrop_platform_telegram,
             "https://t.me/BotDropSetupBot",
-            "Bot Token (from @BotFather)",
-            "123456789:ABCdefGHI...",
-            "Your User ID (from @BotDropSetupBot)",
-            "123456789",
-            "Open the setup bot to create your Telegram bot and get your User ID.",
+            R.string.botdrop_bot_token,
+            R.string.botdrop_telegram_token_hint,
+            R.string.botdrop_owner_id,
+            R.string.botdrop_telegram_owner_hint,
+            R.string.botdrop_telegram_setup_help,
             true
         );
     }
@@ -68,14 +70,13 @@ public class ChannelConfigMeta {
     public static ChannelConfigMeta discord() {
         return new ChannelConfigMeta(
             PLATFORM_DISCORD,
-            "Discord",
+            R.string.botdrop_platform_discord,
             "https://discord.com/developers/applications",
-            "Bot Token",
-            "bot-token",
-            "Owner ID",
-            "optional",
-            "Create a bot in Discord Developer Portal, get the Bot Token, "
-                + "then add the bot to your Guild(Server). It will be available in all guild channels.",
+            R.string.botdrop_bot_token,
+            R.string.botdrop_discord_token_hint,
+            R.string.botdrop_owner_id,
+            R.string.botdrop_discord_owner_id_hint,
+            R.string.botdrop_discord_steps,
             false
         );
     }
@@ -83,14 +84,13 @@ public class ChannelConfigMeta {
     public static ChannelConfigMeta feishu() {
         return new ChannelConfigMeta(
             PLATFORM_FEISHU,
-            "Feishu",
+            R.string.botdrop_platform_feishu,
             "https://open.feishu.cn",
-            "App ID",
-            "app-id",
-            "App Secret",
-            "app-secret",
-            "Create a Feishu app and bot, then fill in App ID and App Secret below. "
-                + "See <a href=\"https://docs.openclaw.ai/channels/feishu\">setup guide</a> for details.",
+            R.string.botdrop_app_id,
+            R.string.botdrop_feishu_app_id_hint,
+            R.string.botdrop_app_secret,
+            R.string.botdrop_feishu_app_secret_hint,
+            R.string.botdrop_feishu_steps,
             true
         );
     }

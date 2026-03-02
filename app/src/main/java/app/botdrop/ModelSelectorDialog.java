@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -63,11 +64,11 @@ public class ModelSelectorDialog extends Dialog {
     private static final int MODEL_REQUEST_READ_TIMEOUT_MS = 15000;
     private static final String MODELS_PATH_SUFFIX = "/models";
     private static final String CUSTOM_PROVIDER_ID = BotDropConfig.CUSTOM_PROVIDER_ID;
-    private static final String CUSTOM_PROVIDER_DISPLAY_NAME = "Custom Provider";
-    private static final String PROVIDER_SECTION_CONFIGURED = "Configured providers";
-    private static final String PROVIDER_SECTION_UNCONFIGURED = "Not configured providers";
-    private static final String PROVIDER_STATUS_CONFIGURED = "Configured";
-    private static final String PROVIDER_STATUS_UNCONFIGURED = "Not configured";
+    private static final int CUSTOM_PROVIDER_DISPLAY_NAME_RES = R.string.botdrop_custom_provider;
+    private static final int PROVIDER_SECTION_CONFIGURED_RES = R.string.botdrop_provider_section_configured;
+    private static final int PROVIDER_SECTION_UNCONFIGURED_RES = R.string.botdrop_provider_section_unconfigured;
+    private static final int PROVIDER_STATUS_CONFIGURED_RES = R.string.botdrop_provider_status_configured;
+    private static final int PROVIDER_STATUS_UNCONFIGURED_RES = R.string.botdrop_provider_status_unconfigured;
 
     // Cached in-memory for the currently active OpenClaw version.
     private static List<ModelInfo> sCachedAllModels;
@@ -112,6 +113,22 @@ public class ModelSelectorDialog extends Dialog {
     public void show(ModelSelectedCallback callback) {
         this.mCallback = callback;
         super.show();
+    }
+
+    private String getDialogText(@StringRes int resId) {
+        Context context = getContext();
+        if (context == null) {
+            return "";
+        }
+        return context.getString(resId);
+    }
+
+    private String getDialogText(@StringRes int resId, Object... args) {
+        Context context = getContext();
+        if (context == null) {
+            return "";
+        }
+        return context.getString(resId, args);
     }
 
     static void cacheProviderApiKey(@NonNull Context context, String provider, String key) {
@@ -297,10 +314,10 @@ public class ModelSelectorDialog extends Dialog {
         if (mService == null) {
             List<ModelInfo> models = readModelsFromAsset();
             if (!models.isEmpty()) {
-                showModelsFromList("Fallback to bundled catalog", models);
+                showModelsFromList(getDialogText(R.string.botdrop_fallback_to_bundled_catalog), models);
                 return;
             }
-            showError("Failed to load model catalog.");
+            showError(getDialogText(R.string.botdrop_failed_to_load_model_catalog));
             return;
         }
 
@@ -316,10 +333,13 @@ public class ModelSelectorDialog extends Dialog {
                 }
                 List<ModelInfo> fallback = readModelsFromAsset();
                 if (!fallback.isEmpty()) {
-                    showModelsFromList("Failed to load from OpenClaw; using bundled catalog", fallback);
+                    showModelsFromList(
+                        getDialogText(R.string.botdrop_failed_to_load_from_openclaw_using_bundled_catalog),
+                        fallback
+                    );
                     return;
                 }
-                showError("Failed to load model catalog.");
+                showError(getDialogText(R.string.botdrop_failed_to_load_model_catalog));
                 return;
             }
 
@@ -328,10 +348,13 @@ public class ModelSelectorDialog extends Dialog {
                 Logger.logError(LOG_TAG, "Model list command returned empty output");
                 List<ModelInfo> fallback = readModelsFromAsset();
                 if (!fallback.isEmpty()) {
-                    showModelsFromList("Failed to parse command output; using bundled catalog", fallback);
+                    showModelsFromList(
+                        getDialogText(R.string.botdrop_failed_to_parse_openclaw_output_using_bundled_catalog),
+                        fallback
+                    );
                     return;
                 }
-                showError("No model list available.");
+                showError(getDialogText(R.string.botdrop_no_model_list_available));
                 return;
             }
 
@@ -345,7 +368,10 @@ public class ModelSelectorDialog extends Dialog {
             sCachedVersion = normalizedVersion;
             sCachedAllModels = models;
             Logger.logInfo(LOG_TAG, "Loaded " + models.size() + " models for OpenClaw v" + versionForLog);
-            showModelsFromList("Loaded " + models.size() + " models from OpenClaw", models);
+            showModelsFromList(
+                getDialogText(R.string.botdrop_loaded_models_from_openclaw, models.size()),
+                models
+            );
         });
     }
 
@@ -391,7 +417,11 @@ public class ModelSelectorDialog extends Dialog {
 
     private void showModelsFromList(String sourceMessage, List<ModelInfo> models) {
         if (models.isEmpty()) {
-            showError(sourceMessage.isEmpty() ? "No model list available." : sourceMessage);
+            showError(
+                TextUtils.isEmpty(sourceMessage)
+                    ? getDialogText(R.string.botdrop_no_model_list_available)
+                    : sourceMessage
+            );
             return;
         }
 
@@ -445,10 +475,12 @@ public class ModelSelectorDialog extends Dialog {
             providerIdSection.setVisibility(isCustomProvider(provider) ? View.VISIBLE : View.GONE);
         }
 
-        selectedModelText.setText(isCustomProvider(provider) ? CUSTOM_PROVIDER_DISPLAY_NAME : provider);
+        selectedModelText.setText(
+                isCustomProvider(provider) ? getDialogText(CUSTOM_PROVIDER_DISPLAY_NAME_RES) : provider
+        );
         noteText.setText(isCustomProvider(provider)
-            ? "Enter provider ID (optional), base URL and API key, then load models."
-            : "Enter API key for this provider.");
+            ? getDialogText(R.string.botdrop_enter_provider_credentials_custom)
+            : getDialogText(R.string.botdrop_enter_api_key_for_provider));
 
         String suggestedProviderId = isCustomProvider(provider)
             ? sanitizeProviderIdentifier(deriveProviderIdFromUrl(savedBaseUrl))
@@ -468,7 +500,11 @@ public class ModelSelectorDialog extends Dialog {
         if (providerIdInput != null && !useCustomEndpoint) {
             providerIdInput.setText("");
         }
-        apiKeyInput.setHint(hasExistingKey ? "Leave empty to keep current key" : "Enter API key");
+        apiKeyInput.setHint(
+            hasExistingKey
+                ? getDialogText(R.string.botdrop_leave_empty_to_keep_current_key)
+                : getDialogText(R.string.botdrop_enter_api_key)
+        );
         apiKeyInput.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         apiKeyInput.setTextColor(getContext().getColor(R.color.botdrop_on_background));
         apiKeyInput.setText("");
@@ -486,8 +522,8 @@ public class ModelSelectorDialog extends Dialog {
                 return;
             }
             confirmButton.setText(inDeleteMode[0]
-                ? "Confirm"
-                : (useCustomEndpoint ? "Fetch Models" : "Continue"));
+                ? getDialogText(R.string.botdrop_confirm)
+                : getDialogText(useCustomEndpoint ? R.string.botdrop_fetch_models : R.string.botdrop_continue));
         };
         updateConfirmButton.run();
 
@@ -520,7 +556,7 @@ public class ModelSelectorDialog extends Dialog {
                     effectiveBaseUrl = savedBaseUrl;
                 }
                 if (TextUtils.isEmpty(effectiveBaseUrl)) {
-                    baseUrlInput.setError("Base URL is required for this provider");
+                    baseUrlInput.setError(getDialogText(R.string.botdrop_base_url_required_for_provider));
                     return;
                 }
 
@@ -533,14 +569,14 @@ public class ModelSelectorDialog extends Dialog {
 
                 if (TextUtils.isEmpty(resolvedProvider)) {
                     if (providerIdInput != null) {
-                        providerIdInput.setError("Provider ID is required");
+                        providerIdInput.setError(getDialogText(R.string.botdrop_provider_id_required));
                     }
                     return;
                 }
 
                 if (isCustomProvider(provider) && isDuplicateProviderId(resolvedProvider)) {
                     if (providerIdInput != null) {
-                        providerIdInput.setError("This provider name already exists");
+                        providerIdInput.setError(getDialogText(R.string.botdrop_provider_name_exists));
                     }
                     return;
                 }
@@ -559,7 +595,7 @@ public class ModelSelectorDialog extends Dialog {
                 }
             }
             if (TextUtils.isEmpty(effectiveApiKey)) {
-                apiKeyInput.setError("API key is required for this provider");
+                apiKeyInput.setError(getDialogText(R.string.botdrop_api_key_required_for_provider));
                 return;
             }
 
@@ -622,13 +658,13 @@ public class ModelSelectorDialog extends Dialog {
 
     private void loadCustomModels(String provider, String baseUrl, String apiKey) {
         if (TextUtils.isEmpty(provider) || TextUtils.isEmpty(baseUrl) || TextUtils.isEmpty(apiKey)) {
-            showError("Base URL and API key are required for custom providers.");
+            showError(getDialogText(R.string.botdrop_custom_provider_base_url_and_api_key_required));
             return;
         }
 
         showLoading();
         if (mStatusText != null) {
-            mStatusText.setText("Loading models from custom URL...");
+            mStatusText.setText(getDialogText(R.string.botdrop_loading_models_from_custom_url));
         }
 
         new Thread(() -> {
@@ -643,7 +679,7 @@ public class ModelSelectorDialog extends Dialog {
                 }
 
                 if (models == null || models.isEmpty()) {
-                    showError("No models returned by custom provider URL.");
+                    showError(getDialogText(R.string.botdrop_no_models_returned_by_custom_provider));
                     clearPendingCredentials();
                     return;
                 }
@@ -935,7 +971,7 @@ public class ModelSelectorDialog extends Dialog {
         }
         if (titleText != null) {
             titleText.setVisibility(View.VISIBLE);
-            titleText.setText("Cached keys");
+            titleText.setText(getDialogText(R.string.botdrop_cached_keys));
         }
 
         for (String key : cachedKeys) {
@@ -974,7 +1010,7 @@ public class ModelSelectorDialog extends Dialog {
             row.addView(keyText);
 
             TextView useAction = new TextView(getContext());
-            useAction.setText("Use");
+            useAction.setText(getDialogText(R.string.botdrop_use));
             useAction.setTextSize(12f);
             useAction.setTextColor(getContext().getColor(R.color.botdrop_accent));
             useAction.setTypeface(useAction.getTypeface(), android.graphics.Typeface.BOLD);
@@ -990,7 +1026,7 @@ public class ModelSelectorDialog extends Dialog {
 
             ImageButton deleteAction = new ImageButton(getContext());
             deleteAction.setImageResource(android.R.drawable.ic_menu_delete);
-            deleteAction.setContentDescription("Delete cached key");
+            deleteAction.setContentDescription(getDialogText(R.string.botdrop_delete_cached_key));
             deleteAction.setColorFilter(getContext().getColor(R.color.status_disconnected));
             deleteAction.setBackgroundResource(android.R.color.transparent);
             int iconSize = (int) (22 * getContext().getResources().getDisplayMetrics().density);
@@ -1349,8 +1385,8 @@ public class ModelSelectorDialog extends Dialog {
         }
 
         if (mPromptForApiKey) {
-            customProviderItem = new ModelInfo(CUSTOM_PROVIDER_DISPLAY_NAME, CUSTOM_PROVIDER_ID, "");
-            customProviderItem.statusText = "Add custom provider";
+            customProviderItem = new ModelInfo(getDialogText(CUSTOM_PROVIDER_DISPLAY_NAME_RES), CUSTOM_PROVIDER_ID, "");
+            customProviderItem.statusText = getDialogText(R.string.botdrop_add_custom_provider);
 
             List<String> customProviders = BotDropConfig.getConfiguredCustomProviders();
             for (String customProvider : customProviders) {
@@ -1384,35 +1420,35 @@ public class ModelSelectorDialog extends Dialog {
         Collections.sort(unconfiguredProviders, String::compareToIgnoreCase);
 
         if (!configuredProviders.isEmpty()) {
-            mCurrentItems.add(createSectionHeader(PROVIDER_SECTION_CONFIGURED));
+            mCurrentItems.add(createSectionHeader(getDialogText(PROVIDER_SECTION_CONFIGURED_RES)));
             for (String provider : configuredProviders) {
-                mCurrentItems.add(createProviderListItem(provider, PROVIDER_STATUS_CONFIGURED, false));
+                mCurrentItems.add(createProviderListItem(provider, getDialogText(PROVIDER_STATUS_CONFIGURED_RES), false));
             }
         }
         if (!unconfiguredProviders.isEmpty() || customProviderItem != null) {
-            mCurrentItems.add(createSectionHeader(PROVIDER_SECTION_UNCONFIGURED));
+            mCurrentItems.add(createSectionHeader(getDialogText(PROVIDER_SECTION_UNCONFIGURED_RES)));
             if (customProviderItem != null) {
                 mCurrentItems.add(customProviderItem);
             }
             for (String provider : unconfiguredProviders) {
-                mCurrentItems.add(createProviderListItem(provider, PROVIDER_STATUS_UNCONFIGURED, false));
+                mCurrentItems.add(createProviderListItem(provider, getDialogText(PROVIDER_STATUS_UNCONFIGURED_RES), false));
             }
         }
         if (mCurrentItems.isEmpty()) {
-            mCurrentItems.add(createSectionHeader("No provider available"));
+            mCurrentItems.add(createSectionHeader(getDialogText(R.string.botdrop_no_provider_available)));
         }
 
         mSearchBox.setText("");
-        mSearchBox.setHint("Search provider...");
+        mSearchBox.setHint(getDialogText(R.string.botdrop_search_provider));
         mBackButton.setVisibility(View.GONE);
         if (mStepHint != null) {
-            mStepHint.setText("Step 1 of 2");
+            mStepHint.setText(getDialogText(R.string.botdrop_step_1_of_2));
         }
-        mTitleText.setText("Select Provider");
+        mTitleText.setText(getDialogText(R.string.botdrop_select_provider));
 
         mAdapter.updateList(mCurrentItems);
         if (mCurrentItems.isEmpty()) {
-            showError("No provider available.");
+            showError(getDialogText(R.string.botdrop_no_provider_available));
             return;
         }
         showList();
@@ -1426,7 +1462,7 @@ public class ModelSelectorDialog extends Dialog {
 
     private ModelInfo createProviderListItem(String provider, String statusText, boolean asHeader) {
         if (TextUtils.isEmpty(provider)) {
-            return createSectionHeader("No provider available");
+            return createSectionHeader(getDialogText(R.string.botdrop_no_provider_available));
         }
         ModelInfo item = new ModelInfo(provider, provider, "");
         item.statusText = statusText;
@@ -1510,17 +1546,17 @@ public class ModelSelectorDialog extends Dialog {
 
         mCurrentItems = new ArrayList<>(models);
         mSearchBox.setText("");
-        mSearchBox.setHint("Search model...");
+        mSearchBox.setHint(getDialogText(R.string.botdrop_search_model));
         mBackButton.setVisibility(View.VISIBLE);
         if (mStepHint != null) {
-            mStepHint.setText("Step 2 of 2");
+            mStepHint.setText(getDialogText(R.string.botdrop_step_2_of_2));
         }
-        String providerName = isCustomProvider(provider) ? CUSTOM_PROVIDER_DISPLAY_NAME : provider;
-        mTitleText.setText(providerName + " models");
+        String providerName = isCustomProvider(provider) ? getDialogText(CUSTOM_PROVIDER_DISPLAY_NAME_RES) : provider;
+        mTitleText.setText(getDialogText(R.string.botdrop_provider_models, providerName));
 
         mAdapter.updateList(mCurrentItems);
         if (mCurrentItems.isEmpty()) {
-            showError("No models available for " + providerName);
+            showError(getDialogText(R.string.botdrop_no_models_available_for_provider, providerName));
             return;
         }
         showList();
@@ -1642,7 +1678,7 @@ public class ModelSelectorDialog extends Dialog {
         mModelList.setVisibility(View.GONE);
         mRetryButton.setVisibility(View.GONE);
         mStatusText.setVisibility(View.VISIBLE);
-        mStatusText.setText("Loading models...");
+        mStatusText.setText(getDialogText(R.string.botdrop_loading_models));
     }
 
     private void showError(String message) {

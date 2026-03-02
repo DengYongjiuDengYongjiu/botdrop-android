@@ -211,16 +211,16 @@ public class InstallFragment extends Fragment {
                 // Get and display version
                 String version = BotDropService.getOpenclawVersion();
                 if (version != null) {
-                    mStatusMessage.setText("Installation complete! (v" + version + ")");
+                    mStatusMessage.setText(getString(R.string.botdrop_installation_complete_with_version, version));
                 } else {
-                    mStatusMessage.setText("Installation complete!");
+                    mStatusMessage.setText(getString(R.string.botdrop_installation_complete));
                 }
 
                 prefetchModelList(version, () -> {
                     if (!isAdded() || !isResumed() || mStatusMessage == null) {
                         return;
                     }
-                    mStatusMessage.setText("Preparing next step...");
+                    mStatusMessage.setText(getString(R.string.botdrop_preparing_next_step));
 
                     // Auto-advance to next step after 1.5 seconds
                     // Track runnable so we can remove it in onDestroyView() if needed
@@ -413,14 +413,14 @@ public class InstallFragment extends Fragment {
     private void showError(String error) {
         mErrorMessage.setText(error);
         mErrorContainer.setVisibility(View.VISIBLE);
-        mStatusMessage.setText("Installation failed");
+        mStatusMessage.setText(getString(R.string.botdrop_installation_failed));
     }
 
     private void resetSteps() {
         mStep0Icon.setText("○");
         mStep1Icon.setText("○");
         mStep2Icon.setText("○");
-        mStatusMessage.setText("This takes about a minute");
+        mStatusMessage.setText(getString(R.string.botdrop_takes_about_a_minute));
         mInstallationStarted.set(false);
     }
 }
