@@ -51,9 +51,6 @@ public abstract class ChannelFormFragment extends Fragment {
     private View mDiscordGuildRow;
     private TextView mDiscordGuildLabel;
     private EditText mDiscordGuildInput;
-    private View mDiscordChannelRow;
-    private TextView mDiscordChannelLabel;
-    private EditText mDiscordChannelInput;
     private Button mConnectButton;
     private Button mSkipButton;
     private TextView mErrorMessage;
@@ -113,9 +110,6 @@ public abstract class ChannelFormFragment extends Fragment {
         mDiscordGuildRow = view.findViewById(R.id.channel_discord_guild_id_row);
         mDiscordGuildLabel = view.findViewById(R.id.channel_discord_guild_id_label);
         mDiscordGuildInput = view.findViewById(R.id.channel_discord_guild_id_input);
-        mDiscordChannelRow = view.findViewById(R.id.channel_discord_channel_id_row);
-        mDiscordChannelLabel = view.findViewById(R.id.channel_discord_channel_id_label);
-        mDiscordChannelInput = view.findViewById(R.id.channel_discord_channel_id_input);
         mConnectButton = view.findViewById(R.id.channel_connect_button);
         mSkipButton = view.findViewById(R.id.channel_skip_button);
         mErrorMessage = view.findViewById(R.id.channel_error_message);
@@ -165,17 +159,6 @@ public abstract class ChannelFormFragment extends Fragment {
             }
             if (mDiscordGuildInput != null) {
                 mDiscordGuildInput.setHint("Your guild ID");
-            }
-            if (mDiscordChannelRow != null) {
-                mDiscordChannelRow.setVisibility(
-                    ChannelConfigMeta.PLATFORM_DISCORD.equals(mMeta.platform) ? View.VISIBLE : View.GONE
-                );
-            }
-            if (mDiscordChannelLabel != null) {
-                mDiscordChannelLabel.setText("Discord Channel ID");
-            }
-            if (mDiscordChannelInput != null) {
-                mDiscordChannelInput.setHint("Target channel ID");
             }
             if (mSetupHelpText != null && mMeta.setupHelpText != null) {
                 mSetupHelpText.setText(android.text.Html.fromHtml(mMeta.setupHelpText, android.text.Html.FROM_HTML_MODE_COMPACT));
@@ -242,7 +225,6 @@ public abstract class ChannelFormFragment extends Fragment {
         String ownerId = mOwnerInput != null ? mOwnerInput.getText().toString().trim() : "";
         String feishuUserId = mFeishuUserIdInput != null ? mFeishuUserIdInput.getText().toString().trim() : "";
         String guildId = mDiscordGuildInput != null ? mDiscordGuildInput.getText().toString().trim() : "";
-        String channelId = mDiscordChannelInput != null ? mDiscordChannelInput.getText().toString().trim() : "";
 
         if (!mMeta.isTokenValid(token)) {
             if (ChannelConfigMeta.PLATFORM_TELEGRAM.equals(mMeta.platform)) {
@@ -269,11 +251,6 @@ public abstract class ChannelFormFragment extends Fragment {
                 showError("Please enter a valid guild ID");
                 return;
             }
-
-            if (!mMeta.isDiscordChannelIdValid(channelId)) {
-                showError("Please enter a valid channel ID");
-                return;
-            }
         }
 
         mConnectButton.setEnabled(false);
@@ -286,7 +263,7 @@ public abstract class ChannelFormFragment extends Fragment {
                 token,
                 ownerId,
                 guildId,
-                channelId
+                null
             );
         } else if (ChannelConfigMeta.PLATFORM_FEISHU.equals(mMeta.platform)) {
             success = ChannelSetupHelper.writeFeishuChannelConfig(
@@ -365,20 +342,8 @@ public abstract class ChannelFormFragment extends Fragment {
                     if (TextUtils.isEmpty(guild)) {
                         continue;
                     }
-                    JSONObject guildConfig = guilds.optJSONObject(guild);
-                    if (guildConfig == null) {
-                        continue;
-                    }
-                    JSONObject guildChannels = guildConfig.optJSONObject("channels");
-                    if (guildChannels == null || guildChannels.length() == 0) {
-                        continue;
-                    }
-                    Iterator<String> channelIterator = guildChannels.keys();
-                    if (channelIterator.hasNext()) {
-                        guildId = guild;
-                        channelId = channelIterator.next();
-                        break;
-                    }
+                    guildId = guild;
+                    break;
                 }
             }
             if (ChannelConfigMeta.PLATFORM_DISCORD.equals(mMeta.platform) && TextUtils.isEmpty(guildId)) {
@@ -399,14 +364,8 @@ public abstract class ChannelFormFragment extends Fragment {
             if (mDiscordGuildInput != null && !TextUtils.isEmpty(guildId)) {
                 mDiscordGuildInput.setText(guildId.trim());
             }
-            if (mDiscordChannelInput != null && !TextUtils.isEmpty(channelId)) {
-                mDiscordChannelInput.setText(channelId.trim());
-            }
-
             if (ChannelConfigMeta.PLATFORM_DISCORD.equals(mMeta.platform)) {
-                mHasExistingConfig = !TextUtils.isEmpty(token)
-                    && !TextUtils.isEmpty(guildId)
-                    && !TextUtils.isEmpty(channelId);
+                mHasExistingConfig = !TextUtils.isEmpty(token) && !TextUtils.isEmpty(guildId);
             } else if (ChannelConfigMeta.PLATFORM_FEISHU.equals(mMeta.platform)) {
                 mHasExistingConfig = !TextUtils.isEmpty(token)
                     && !TextUtils.isEmpty(owner);

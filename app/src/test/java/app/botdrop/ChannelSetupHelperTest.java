@@ -295,6 +295,53 @@ public class ChannelSetupHelperTest {
         assertFalse("Should return false when unable to write to non-existent paths", result);
     }
 
+    @Test
+    public void testBuildDiscordConfig_preservesExistingGuildChannels_whenNoChannelIdProvided() throws JSONException {
+        JSONObject existingChannels = new JSONObject().put("chan-existing", new JSONObject().put("allow", true));
+        JSONObject existingGuild = new JSONObject()
+            .put("channels", existingChannels)
+            .put("note", "preserve");
+        JSONObject existingDiscord = new JSONObject()
+            .put("token", "old-token")
+            .put("guilds", new JSONObject().put("guild-a", existingGuild));
+
+        JSONObject updated = ChannelSetupHelper.buildDiscordConfig(
+            existingDiscord,
+            "new-token",
+            "guild-a",
+            null
+        );
+
+        JSONObject updatedGuild = updated.getJSONObject("guilds").getJSONObject("guild-a");
+        JSONObject updatedChannels = updatedGuild.getJSONObject("channels");
+
+        assertEquals("new-token", updated.getString("token"));
+        assertEquals("preserve", updatedGuild.getString("note"));
+        assertEquals(1, updatedChannels.length());
+        assertTrue(updatedChannels.has("chan-existing"));
+        assertTrue(updatedChannels.getJSONObject("chan-existing").getBoolean("allow"));
+    }
+
+    @Test
+    public void testBuildDiscordConfig_newGuildWithoutChannelIdGetsEmptyChannels() throws JSONException {
+        JSONObject existingDiscord = new JSONObject()
+            .put("token", "old-token")
+            .put("guilds", new JSONObject().put("guild-a", new JSONObject()));
+
+        JSONObject updated = ChannelSetupHelper.buildDiscordConfig(
+            existingDiscord,
+            "new-token",
+            "guild-b",
+            null
+        );
+
+        JSONObject updatedGuild = updated.getJSONObject("guilds").getJSONObject("guild-b");
+        JSONObject updatedChannels = updatedGuild.getJSONObject("channels");
+
+        assertEquals("new-token", updated.getString("token"));
+        assertEquals(0, updatedChannels.length());
+    }
+
     /**
      * Test: writeChannelConfig for Feishu
      */
@@ -412,6 +459,15 @@ public class ChannelSetupHelperTest {
     }
 
     @Test
+    public void testIsDiscordConfigured_withGuildOnly() throws JSONException {
+        JSONObject discord = new JSONObject();
+        discord.put("token", "bot-token");
+        JSONObject guilds = new JSONObject().put("guild1", new JSONObject());
+        discord.put("guilds", guilds);
+        assertTrue(ChannelSetupHelper.isDiscordConfigured(discord));
+    }
+
+    @Test
     public void testIsDiscordConfigured_noTokenFails() throws JSONException {
         JSONObject discord = new JSONObject();
         JSONObject guild = new JSONObject().put("channels", new JSONObject().put("c", new JSONObject()));
@@ -428,11 +484,11 @@ public class ChannelSetupHelperTest {
     }
 
     @Test
-    public void testIsDiscordConfigured_guildWithNoChannelsFails() throws JSONException {
+    public void testIsDiscordConfigured_guildKeyIsRequired() throws JSONException {
         JSONObject discord = new JSONObject();
         discord.put("token", "bot-token");
-        JSONObject guild = new JSONObject(); // no "channels" key
-        discord.put("guilds", new JSONObject().put("g1", guild));
+        JSONObject guild = new JSONObject();
+        discord.put("guilds", new JSONObject().put("", guild));
         assertFalse(ChannelSetupHelper.isDiscordConfigured(discord));
     }
 

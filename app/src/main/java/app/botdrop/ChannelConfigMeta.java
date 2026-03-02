@@ -75,7 +75,7 @@ public class ChannelConfigMeta {
             "Owner ID",
             "optional",
             "Create a bot in Discord Developer Portal, get the Bot Token, "
-                + "then add the bot to your Guild(Server) and Channel.",
+                + "then add the bot to your Guild(Server). It will be available in all guild channels.",
             false
         );
     }

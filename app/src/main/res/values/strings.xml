@@ -334,7 +334,7 @@
     <string name="botdrop_step_3_4">Step 3/4</string>
     <string name="botdrop_connect_im_channels">Connect IM Channels</string>
     <string name="botdrop_discord_intro">Create a bot on Discord Developer Portal and paste the bot token below.</string>
-    <string name="botdrop_discord_steps">Required steps: 1) Create bot and copy token; 2) Add bot to your server(guild); 3) Add bot to at least one channel.</string>
+    <string name="botdrop_discord_steps">Required steps: 1) Create bot and copy token; 2) Add bot to your server(guild).</string>
     <string name="botdrop_bot_token">Bot Token</string>
     <string name="botdrop_bot_token_hint">Bot token</string>
     <string name="botdrop_guild_id">Guild ID</string>
