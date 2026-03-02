@@ -267,6 +267,16 @@
         </receiver>
 
 
+        <!-- Clipboard receiver for shizuku-automation OpenClaw skill.
+             Allows setting clipboard via: am broadcast -a app.botdrop.SET_CLIPBOARD --es text "..." -->
+        <receiver
+            android:name=".botdrop.ClipboardReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="app.botdrop.SET_CLIPBOARD" />
+            </intent-filter>
+        </receiver>
+
         <receiver
             android:name=".app.TermuxOpenReceiver"
             android:exported="false" />

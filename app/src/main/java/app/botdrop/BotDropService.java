@@ -617,10 +617,82 @@ public class BotDropService extends Service {
         // This matters for in-place upgrades where users won't re-run channel setup.
         BotDropConfig.sanitizeLegacyConfig();
 
+        // Deploy built-in skills (e.g. shizuku-automation) before starting gateway
+        deployBuiltinSkills();
+
         mExecutor.execute(() -> {
             CommandResult startResult = executeGatewayStart();
             mHandler.post(() -> callback.onResult(startResult));
         });
+    }
+
+    /**
+     * Deploy built-in skills from APK assets to OpenClaw workspace.
+     * Copies assets/skills/* to ~/.openclaw/workspace/skills/
+     * Overwrites existing files to ensure latest version.
+     */
+    private void deployBuiltinSkills() {
+        final String SKILLS_ASSET_PREFIX = "skills";
+        final String WORKSPACE_SKILLS_DIR = TermuxConstants.TERMUX_HOME_DIR_PATH
+            + "/.openclaw/workspace/skills";
+
+        try {
+            String[] skillDirs = getAssets().list(SKILLS_ASSET_PREFIX);
+            if (skillDirs == null || skillDirs.length == 0) {
+                return;
+            }
+
+            for (String skillName : skillDirs) {
+                copyAssetDir(SKILLS_ASSET_PREFIX + "/" + skillName,
+                    WORKSPACE_SKILLS_DIR + "/" + skillName);
+            }
+            Logger.logInfo(LOG_TAG, "Deployed " + skillDirs.length + " built-in skill(s)");
+        } catch (Exception e) {
+            Logger.logWarn(LOG_TAG, "Failed to deploy built-in skills: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Recursively copy an asset directory to the filesystem.
+     */
+    private void copyAssetDir(String assetPath, String destPath) throws IOException {
+        String[] children = getAssets().list(assetPath);
+        if (children == null || children.length == 0) {
+            // It's a file — copy it
+            copyAssetFile(assetPath, destPath);
+            return;
+        }
+
+        // It's a directory
+        java.io.File destDir = new java.io.File(destPath);
+        if (!destDir.exists() && !destDir.mkdirs()) {
+            Logger.logWarn(LOG_TAG, "Cannot create dir: " + destPath);
+            return;
+        }
+
+        for (String child : children) {
+            copyAssetDir(assetPath + "/" + child, destPath + "/" + child);
+        }
+    }
+
+    /**
+     * Copy a single asset file to the filesystem, overwriting if exists.
+     */
+    private void copyAssetFile(String assetPath, String destPath) throws IOException {
+        java.io.File destFile = new java.io.File(destPath);
+        java.io.File parentDir = destFile.getParentFile();
+        if (parentDir != null && !parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
+        try (java.io.InputStream in = getAssets().open(assetPath);
+             java.io.FileOutputStream out = new java.io.FileOutputStream(destFile)) {
+            byte[] buf = new byte[8192];
+            int len;
+            while ((len = in.read(buf)) > 0) {
+                out.write(buf, 0, len);
+            }
+        }
     }
 
     public void stopGateway(CommandCallback callback) {

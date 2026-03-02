@@ -1,0 +1,9 @@
+{
+  "name": "shizuku-automation",
+  "version": "0.1.0",
+  "description": "OpenClaw skill for Android app automation via Shizuku Bridge",
+  "main": "cli.js",
+  "scripts": {},
+  "keywords": ["openclaw", "shizuku", "android", "automation"],
+  "license": "MIT"
+}
